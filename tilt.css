@@ -1,0 +1,332 @@
+body{
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #00ff00;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    z-index: -1;
+}
+
+div {
+    overflow: hidden;
+}
+
+td {
+    width: 100%;
+    text-align: center;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.TempOk {
+    color: #22814c;
+}
+
+.TempLow {
+    color: #00a2e8;
+}
+
+.TempHigh {
+    color: #ed1c24;
+}
+
+.Tilt {
+   padding: 1vh;
+   cursor: pointer;
+}
+
+.Black {
+    border-radius: 1vh;
+    border: solid 1px #ffffff;
+    color: #ffffff;
+}
+
+.Blue {
+    border-radius: 1vh;
+    border: solid 1px #00a2e8;
+    color: #00a2e8;
+}
+
+.Green {
+    border-radius: 1vh;
+    border: solid 1px #22b14c;
+    color: #22b14c;
+}
+
+.Orange {
+    border-radius: 1vh;
+    border: solid 1px #ff7f27;
+    color: #ff7f27;
+}
+
+.Pink {
+    border-radius: 1vh;
+    border: solid 1px #ffaec9;
+    color: #ffaec9;
+}
+
+.Purple {
+    border-radius: 1vh;
+    border: solid 1px #ae49a4;
+    color: #ae49a4;
+}
+
+.Red {
+    border-radius: 1vh;
+    border: solid 1px #ed1c24;
+    color: #ed1c24;
+}
+
+.Yellow {
+    border-radius: 1vh;
+    border: solid 1px #fff200;
+    color: #fff200;
+}
+
+.BeerName {
+    position: relative;
+    width: 100%;
+    height: 3vh;
+    font-size: 2vh;
+    line-height: 3vh;
+    color: #ffffff;
+}
+
+.BeerGrav {
+    position: relative;
+    width: 100%;
+    height: 12vh;
+    font-size: 10vh;
+    line-height: 12vh;
+    text-align: center;
+}
+
+.BeerTemp {
+    position: relative;
+    width: 100%;
+    height: 3vh;
+    font-size: 2vh;
+    line-height: 3vh;
+    text-align: right;
+    color: #ffffff;
+}
+
+.Metric {
+    position: relative;
+    padding: 1vh;
+    width: 100%;
+    height: 100%;
+    line-height: 4vh;
+    font-size: 3vh;
+}
+
+.MetricButtons {
+    position: relative;
+    padding: 1vh;
+    width: 100%;
+    height: 100%;
+    line-height: 4vh;
+    font-size: 3vh;
+    grid-row: span 3;
+}
+
+.BeerNameButton {
+    border: solid 1px #ffffff;
+    border-radius: 3vh;
+    width: 98%;
+    height: 98%;
+    line-height: 11vh;
+    font-size: 10vh;
+    text-align: center;
+    cursor: pointer;
+}
+
+.BeerNameButtonDouble {
+    border: solid 1px #ffffff;
+    border-radius: 3vh;
+    width: 98%;
+    height: 98%;
+    line-height: 11vh;
+    font-size: 10vh;
+    text-align: center;
+    cursor: pointer;
+    grid-column: span 2;
+}
+
+.BeerNameButtonVertical{
+    border: solid 1px #ffffff;
+    border-radius: 3vh;
+    width: 98%;
+    height: 98%;
+    line-height: 22vh;
+    font-size: 10vh;
+    text-align: center;
+    cursor: pointer;
+    grid-row: span 2;
+}
+
+#Main{
+    position: fixed;
+    left: 0vw;
+    top: 0vw;
+    background-color: #333333;
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+    background-image: url("img/ssblogo.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: 50%;
+    background-size: 100vh;
+    z-index: 0;
+}
+
+#Sv {
+    position: absolute;
+    left: 0vw;
+    top: 0vh;
+    width: 50vw;
+    height: 38vh;
+    /*background-color: #ff0000;*/
+}
+
+#SvHeader {
+    position: fixed;
+    left: 1vw;
+    top: 0vh;
+    width: 48vw;
+    font-weight: bold;
+    line-height: 8vh;
+    font-size: 5vh;
+}
+
+#SvText {
+    position: fixed;
+    left: 1vw;
+    top: 3vh;
+    width: 48vw;
+    line-height: 25vh;
+    font-size: 25vh;
+    text-align: center;
+}
+
+#SvFooter {
+    position: fixed;
+    left: 1vw;
+    top: 28vh;
+    width: 48vw;
+    line-height: 4vh;
+    font-size: 3vh;
+    text-align: right;
+}
+
+#Pv {
+    position: absolute;
+    left: 50vw;
+    top: 0vh;
+    width: 50vw;
+    height: 38vh;
+    /*background-color: #00ff00;*/
+}
+
+#PvHeader {
+    position: fixed;
+    left: 51vw;
+    top: 0vh;
+    width: 48vw;
+    font-weight: bold;
+    line-height: 8vh;
+    font-size: 5vh;
+}
+
+#PvText {
+    position: fixed;
+    left: 51vw;
+    top: 3vh;
+    width: 48vw;
+    line-height: 25vh;
+    font-size: 25vh;
+    text-align: center;
+
+}
+#PvFooter {
+    position: fixed;
+    left: 51vw;
+    top: 28vh;
+    width: 48vw;
+    line-height: 4vh;
+    font-size: 3vh;
+    text-align: right;
+}
+
+#Tilts {
+    position: absolute;
+    left: 0vw;
+    top: 38vh;
+    height: 42vh;
+    width: 100vw;
+    display: grid;
+    grid-template-columns: repeat(4, 24vw);
+    grid-template-rows: repeat(2, 19vh);
+    column-gap: 1vw;
+    row-gap: 1vh;
+}
+
+#Metrics {
+    position: absolute;
+    left: 0vw;
+    top: 80vh;
+    height: 20vh;
+    width: 100vw;
+    display: grid;
+    grid-template-columns: repeat(4, 24vw);
+    grid-template-rows: repeat(3, 5vh);
+    column-gap: 1vw;
+    row-gap: .5vh;
+}
+#MetricButtons {
+    z-index: 2;
+}
+
+#BeerName{
+    position: fixed;
+    visibility: hidden;
+    left: 0vw;
+    top: 0vw;
+    background-color: #333333f7;
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+    z-index: 3;
+}
+
+#BeerNameDisplay {
+    position: fixed;
+    left: 0vw;
+    top: 0vh;
+    width: 100%;
+    height: 48vh;
+    line-height: 48vh;
+    font-size: 20vh;
+}
+
+#BeerNameButtons {
+    position: fixed;
+    left: 0vw;
+    top: 48vh;
+    height: 52vh;
+    display: grid;
+    grid-template-columns: repeat(12, 8.1vw);
+    column-gap: .25vw;
+    grid-template-rows: repeat(4, 12.5vh);
+    row-gap: .25vh;
+    overflow: hidden;
+}
