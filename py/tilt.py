@@ -34,6 +34,9 @@ AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = round(time.time(), 1)
 
+Debug = False
+if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
+  Debug = True
 
 #Function Declarations
 def GetAmps(channel):
@@ -183,11 +186,13 @@ try:
           if match != None:
             data[color]['Temp'] = float(match.group(1))
             data[color]['Grav'] = float(match.group(2))
-            print("%s - %f SG at %f deg" % (color, float(match.group(2)), float(match.group(1))))
+            if Debug:
+              print("%s - %f SG at %f deg" % (color, float(match.group(2)), float(match.group(1))))
           else:
             data[color]['Temp'] = 0.0
             data[color]['Grav'] = 1.0
-            print("No Signal from %s tilt!" % (color))
+            if Debug:
+              print("No Signal from %s tilt!" % (color))
         else:
           data[color]['Temp'] = 0.0
           data[color]['Grav'] = 1.0
@@ -212,8 +217,9 @@ try:
       nextCycle += Settings['CycleFrequency']
 
     if loop == nextLog:
-      print("\rLogging to Azure:")
       for color in Settings['EnabledTilts']:
+        if Debug:
+          print("Logging %s to Azure:\r" % (color))
         payload = """{
           "BeerName": "%s",
           "ColdAmps": %f,
@@ -232,7 +238,8 @@ try:
         }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'])
         
         post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
-        print("\rLogging to Azure: OK")
+        if Debug:
+          print("Logging %s to Azure: OK\r" % (color))
       nextLog += Settings['LogFrequency']
 
     loop += 1
@@ -243,7 +250,8 @@ try:
 
 except Exception as e:
   now = datetime.datetime.now()
-  print(e)
+  if Debug:
+    print(e)
   f = open('/var/www/html/python_errors.log', 'a')
   f.write("%s - TILT [%i] - %s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"), sys.exc_info()[-1].tb_lineno, e))
   f.close()
