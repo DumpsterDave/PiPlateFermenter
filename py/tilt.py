@@ -35,6 +35,11 @@ AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
 
+#Initialize Tilt
+tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
+tilt.loadSettings()
+tilt.start()
+
 Debug = False
 if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
   Debug = True
@@ -62,10 +67,6 @@ def GetVolts():
       vMax = vMeas
 
   return ((vMax + VSHIFT) * VMULT)
-
-def GetTemp(scale):
-  global ADDR, TEMP
-  return DAQC.getTEMP(ADDR, TEMP, scale)
 
 def OnKill(signum, frame):
   global RUN, ADDR, HOT, COLD
@@ -131,6 +132,20 @@ try:
   f = open('/var/www/html/py/data.json')
   data = json.load(f)
   f.close()
+  #Copy some settings to the data structure
+  data['TargetTemp'] = Settings['TargetTemp']
+  data['Hysteresis'] = Settings['Hysteresis']
+  for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
+    data[color]['Name'] = ""
+  for color in Settings['EnabledTilts']:
+    data[color]['Name'] = Settings[color]
+  data['TempUnits'] = Settings['TempUnits']
+  data['GravUnits'] = Settings['GravUnits']
+  data['LogEnabled'] = Settings['LogEnabled']
+  #Save the new data
+  d = open('/var/www/html/py/data.json', 'w')
+  json.dump(data, d)
+  d.close()
 
   #Initialize loop counter
   loop = 0
@@ -140,13 +155,6 @@ try:
   else:
     nextLog = -1
   nextCycle = loop + Settings['CycleFrequency']
-
-  #Initialize Tilt
-  tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
-  tilt.loadSettings()
-  tilt.start()
-  ColdState = 0
-  HotState = 0
 
   while RUN:
     CurrTime = datetime.datetime.now()
@@ -164,6 +172,16 @@ try:
       f = open("/var/www/html/py/conf.json")
       Settings = json.load(f)
       f.close()
+      #Copy some settings to the data structure
+      data['TargetTemp'] = Settings['TargetTemp']
+      data['Hysteresis'] = Settings['Hysteresis']
+      for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
+        data[color]['Name'] = ""
+      for color in Settings['EnabledTilts']:
+        data[color]['Name'] = Settings[color]
+      data['TempUnits'] = Settings['TempUnits']
+      data['GravUnits'] = Settings['GravUnits']
+      data['LogEnabled'] = Settings['LogEnabled']
       os.remove('/var/www/html/py/reload')
       if Settings['LogEnabled'] == True:
         nextLog = loop
@@ -176,7 +194,7 @@ try:
     data['HotAmps'] = GetAmps(HOT)
     data['ColdAmps'] = GetAmps(COLD)
     data['MainVolts'] = GetVolts()
-    data['ProbeTemp'] = GetTemp(Settings['TempUnits'])
+    data['ProbeTemp'] = DAQC.getTEMP(ADDR, TEMP, 'c')
     data['CpuTemp'] = CPUTemperature().temperature
 
     #Process Beacons?
@@ -265,6 +283,7 @@ except Exception as e:
   f.close()
 
 now = datetime.datetime.now()
+tilt.stop()
 f = open('/var/www/html/python_errors.log', 'a')
 f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))
 f.close()
