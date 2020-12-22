@@ -38,5 +38,7 @@
     "ColdAmps": 0.0,
     "ColdState": 0,
     "CpuTemp": 0.0,
-    "ProbeTemp": 0.0
+    "ProbeTemp": 0.0,
+    "Uptime": "00:00:00",
+    "LastBeacon": ""
 }

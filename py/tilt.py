@@ -6,6 +6,7 @@ import hashlib
 import hmac
 from gpiozero import CPUTemperature
 import json
+import math
 import os
 import re
 import requests
@@ -32,7 +33,7 @@ AX = 0.2434
 AY = 0.6855
 AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
-START_TIME = round(time.time(), 1)
+START_TIME = datetime.datetime.now()
 
 Debug = False
 if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
@@ -148,14 +149,15 @@ try:
   HotState = 0
 
   while RUN:
-    CurrTime = round(time.time(), 1)
-    t = open('/var/www/html/py/uptime', 'w')
-    t.write(str(CurrTime - START_TIME))
-    t.close()
-
+    CurrTime = datetime.datetime.now()
+    #t = open('/var/www/html/py/uptime', 'w')
+    #t.write(str(CurrTime - START_TIME))
+    #t.close()
     d = open('/var/www/html/py/data.json')
     data = json.load(d)
     d.close()
+    Uptime = CurrTime - START_TIME
+    data['Uptime'] = str(Uptime)
 
     #reload settings if they have changed
     if os.path.isfile("/var/www/html/py/reload"):
@@ -196,6 +198,10 @@ try:
         else:
           data[color]['Temp'] = 0.0
           data[color]['Grav'] = 1.0
+      data['LastBeacon'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      #f = open('/var/www/html/py/lastbeacon', 'w')
+      #f.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+      #f.close()
       nextBeacon += Settings['BeaconFrequency']
 
     if loop == nextCycle:
@@ -234,8 +240,10 @@ try:
           "SG": %f,
           "TiltTemp": %f,
           "Voltage": %f,
-          "CpuTemp": %f
-        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'])
+          "CpuTemp": %f,
+          "Uptime": "%s",
+          "LastBeacon": "%s"
+        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data['LastBeacon'])
         
         post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
         if Debug:
