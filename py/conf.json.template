@@ -1,0 +1,22 @@
+{	
+    "WorkspaceId": "",	
+    "WorkspaceKey": "",	
+    "LogName": "",
+    "LogFrequency": 10,
+    "LogEnabled": true,
+    "BeaconFrequency": 10,
+    "TempUnits": "f",
+    "GravUnits": "sg",
+    "Black": "",
+    "Blue": "",
+    "Green": "",
+    "Orange": "",
+    "Pink": "",
+    "Purple": "",
+    "Red": "",
+    "Yellow": "",
+    "Hysteresis": 0.5,
+    "TargetTemp": 16.7,
+    "CycleFrequency": 10,
+    "EnabledTilts":["Green","Pink"]
+}

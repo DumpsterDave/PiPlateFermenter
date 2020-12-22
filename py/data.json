@@ -1,0 +1,42 @@
+{
+    "Black": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Blue": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Green": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Orange": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Pink": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Purple": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Red": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "Yellow": {
+        "Temp": 0.0,
+        "Grav": 1.0
+    },
+    "MainVolts": 0.0,
+    "MainAmps": 0.0,
+    "HotAmps": 0.0,
+    "HotState": 0,
+    "ColdAmps": 0.0,
+    "ColdState": 0,
+    "CpuTemp": 0.0,
+    "ProbeTemp": 0.0
+}
