@@ -169,6 +169,66 @@ a {
     grid-row: span 2;
 }
 
+.TargetTempButton {
+    border: solid 1px #ffffff;
+    border-radius: 3vh;
+    width: 98%;
+    height: 98%;
+    line-height: 17vh;
+    font-size: 9vh;
+    cursor: pointer;
+    text-align: center;
+}
+
+.TargetTempButtonDouble {
+    border: solid 1px #ffffff;
+    border-radius: 3vh;
+    width: 98%;
+    height: 98%;
+    line-height: 17vh;
+    font-size: 9vh;
+    cursor: pointer;
+    text-align: center;
+    grid-column: span 2;
+}
+
+.ConfigLabel {
+    line-height: 11vh;
+    font-size: 7vh;
+    text-align: left;
+}
+
+.ConfigButton {
+    line-height: 11vh;
+    font-size: 7vh;
+    text-align: center;
+    border: 1px solid #ffffff;
+    border-radius: 3vh;
+    cursor: pointer;
+}
+
+.ButtonRed {
+    border-color: #ed1c24;
+    color: #ed1c24;
+}
+
+.ButtonGreen {
+    border-color: #22b14c;
+    color: #22b14c;
+}
+
+.ButtonYellow {
+    border-color: #fff200;
+    color: #fff200;
+}
+
+.ButtonBlue {
+    border-color: #00a2e8;
+    color: #00a2e8;
+}
+
+
+
 #Main{
     position: fixed;
     left: 0vw;
@@ -183,7 +243,7 @@ a {
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: 50%;
-    background-size: 100vh;
+    background-size: 100vh 100vh;
     z-index: 0;
 }
 
@@ -214,6 +274,7 @@ a {
     line-height: 25vh;
     font-size: 25vh;
     text-align: center;
+    cursor: pointer;
 }
 
 #SvFooter {
@@ -312,7 +373,7 @@ a {
     position: fixed;
     left: 0vw;
     top: 0vh;
-    width: 100%;
+    width: 100vw;
     height: 48vh;
     line-height: 48vh;
     font-size: 20vh;
@@ -329,4 +390,72 @@ a {
     grid-template-rows: repeat(4, 12.5vh);
     row-gap: .25vh;
     overflow: hidden;
+}
+
+#SetTargetTemp{
+    position: fixed;
+    visibility: hidden;
+    left: 0vw;
+    top: 0vw;
+    background-color: #333333f7;
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+    z-index: 3;
+}
+
+#NewTargetTemp {
+    position: fixed;
+    width: 70vw;
+    height: 50vh;
+    left: 0vw;
+    top: 0vh;
+    line-height: 48vh;
+    text-align: center;
+    font-size: 25vh;
+}
+
+#CurrTargetTemp {
+    position: fixed;
+    width: 70vw;
+    height: 50vh;
+    left: 0vw;
+    top: 50vh;
+    line-height: 48vh;
+    text-align: center;
+    font-size: 25vh;
+}
+
+#TargetTempNumPad {
+    position: fixed;
+    width: 30vw;
+    height: 100vh;
+    left: 70vw;
+    top: 0vh;
+    display: grid;
+    grid-template-columns: repeat(3, 9vw);
+    grid-template-rows: repeat(5, 19vh);
+    column-gap: 1vw;
+    row-gap: 1vh;
+}
+
+#Config{
+    position: fixed;
+    visibility: hidden;
+    left: 0vw;
+    top: 0vw;
+    background-color: #333333f7;
+    width: 100vw;
+    height: 100vw;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: repeat(4, 24vw);
+    grid-template-rows: repeat(8, 11vh);
+    column-gap: 1vw;
+    row-gap: 1vh;
 }

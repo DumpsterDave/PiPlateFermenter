@@ -37,7 +37,9 @@ function ConvertUnits(Values) {
     document.getElementById('SvFooter').innerHTML = TempSymbol;
     document.getElementById('PvFooter').innerHTML = TempSymbol;
 
-    //Gravity Unit Adjustments
+    
+
+    //Tilt Unit Adjustments
     TiltColors.forEach(color=>{
         if (Values['GravUnits'] == 'sg') {
             Values[color]['Grav'] = Values[color]['Grav'].toFixed(3);
@@ -45,6 +47,14 @@ function ConvertUnits(Values) {
             Values[color]['Grav'] = SgToBrix(Values[color]['Grav']);
         } else {
             Values[color]['Grav'] = SgToPlato(Values[color]['Grav']);
+        }
+
+        if(Values['TempUnits'] == 'f') {
+            Values[color]['Temp'] = TempToF(Values[color]['Temp']).toFixed(1);
+        } else if (Values['TempUnits'] == 'k') {
+            Values[color]['Temp'] = TempToK(Values[color]['Temp']).toFixed(1);
+        } else {
+            Values[color]['Temp'] = Values[color]['Temp'].toFixed(1);
         }
     });
 
@@ -85,6 +95,8 @@ function RefreshElements() {
             //Process Metrics
             document.getElementById("MainVolts").innerHTML = Values['MainVolts'].toFixed(1);
             document.getElementById("MainAmps").innerHTML = Values['MainAmps'].toFixed(1);
+            document.getElementById("kWh").innerHTML = Values['kWh'].toFixed(4);
+            document.getElementById("EnCost").innerHTML = (Values['kWh'] * .09).toFixed(2);
             document.getElementById("ColdAmps").innerHTML = Values['ColdAmps'].toFixed(1);
             document.getElementById("HotAmps").innerHTML = Values['HotAmps'].toFixed(1);
             var UpTimeParts = Values['Uptime'].split(":");
@@ -116,8 +128,86 @@ function HideBeerName() {
     document.getElementById("BeerName").style.visibility = 'hidden';
 }
 
-function ShowConfig() {
+function SaveConfig() {
+    var NewLogEnabled, NewLogFrequency, NewBeaconFrequency, NewTempUnits, NewGravUnits, NewHysteresis, NewCycleFrequency;
+    NewLogEnabled = document.getElementById('NewLogEnabled').value;
+    NewLogFrequency = document.getElementById('NewLogFrequency').value;
+    NewBeaconFrequency = document.getElementById('NewBeaconFrequency').value;
+    NewTempUnits = document.getElementById('NewTempUnits').value;
+    NewGravUnits = document.getElementById('NewGravUnits').value;
+    NewHysteresis = document.getElementById('NewHysteresis').value;
+    NewCycleFrequency = document.getElementById('NewCycleFrequency').value;
 
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            HideConfig();
+        }
+    };
+
+    xhttp.open("GET", "saveconfig.php?LogEnabled=" + NewLogEnabled + "&LogFreq=" + NewLogFrequency + "&BeaconFreq=" + NewBeaconFrequency + "&TempUnits=" + NewTempUnits + "&GravUnits=" + NewGravUnits + "&Hysteresis=" + NewHysteresis + "&CycleFreq=" + NewCycleFrequency, true);
+    xhttp.send();
+}
+
+function HideConfig() {
+    document.getElementById('Config').style.visibility = 'hidden';
+}
+
+function ShowConfig() {
+    if (Values['LogEnabled']) {
+        document.getElementById('NewLogEnabled').value = 'true';
+        document.getElementById('LogEnabled').innerHTML = 'Enabled';
+        document.getElementById('LogEnabled').classList.add('ButtonBlue');
+
+    } else {
+        document.getElementById('NewLogEnabled').value = 'false';
+        document.getElementById('LogEnabled').innerHTML = 'Disabled';
+        document.getElementById('LogEnabled').classList.remove('ButtonBlue');
+    }
+
+    if(Values['TempUnits'] == 'f') {
+        document.getElementById('NewTempUnits').value = 'f';
+        document.getElementById('TempUnitsC').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsF').classList.add('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.remove('ButtonBlue');
+    } else if(Values['TempUnits'] == 'k') {
+        document.getElementById('NewTempUnits').value = 'k';
+        document.getElementById('TempUnitsC').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.add('ButtonBlue');
+    } else {
+        document.getElementById('NewTempUnits').value = 'c';
+        document.getElementById('TempUnitsC').classList.add('ButtonBlue');
+        document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.remove('ButtonBlue');
+    }
+
+    if(Values['GravUnits'] == 'sg') {
+        document.getElementById('NewGravUnits').value = 'sg';
+        document.getElementById('GravUnitsB').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.add('ButtonBlue');
+    } else if (Values['GravUnits'] == 'brix') {
+        document.getElementById('NewGravUnits').value = 'brix';
+        document.getElementById('GravUnitsB').classList.add('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.remove('ButtonBlue');
+    } else {
+        document.getElementById('NewGravUnits').value = 'plato';
+        document.getElementById('GravUnitsB').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.add('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.remove('ButtonBlue');
+    }
+
+    document.getElementById('LogFrequency').innerHTML = Values['LogFrequency'];
+    document.getElementById('NewLogFrequency').value = Values['LogFrequency'];
+    document.getElementById('BeaconFrequency').innerHTML = Values['BeaconFrequency'];
+    document.getElementById('NewBeaconFrequency').value = Values['BeaconFrequency'];
+    document.getElementById('Hysteresis').innerHTML = Values['Hysteresis'].toFixed(1);
+    document.getElementById('NewHysteresis').value = Values['Hysteresis'].toFixed(1);
+    document.getElementById('NewCycleFrequency').value = Values['CycleFrequency'];
+    document.getElementById('CycleFrequency').innerHTML = Values['CycleFrequency'];
+    document.getElementById('Config').style.visibility = 'visible';
 }
 
 function SetBeerName(color, newName) {
@@ -250,4 +340,147 @@ function ToggleShift() {
             }
         }
     }
+}
+
+function SetTargetTemp(NewTarget) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            HideTargetTemp();
+        }
+    };
+
+    xhttp.open("GET", "settargettemp.php?setpoint=" + NewTarget + "&scale=" + Values['TempUnits'], true);
+    xhttp.send();
+}
+
+function HideTargetTemp() {
+    document.getElementById('NewTargetTemp').innerHTML = '';
+    document.getElementById('SetTargetTemp').style.visibility = 'hidden';
+}
+
+function ShowTargetTemp() {
+    document.getElementById('CurrTargetTemp').innerHTML = parseFloat(Values['TargetTemp']).toFixed(1) + TempSymbol;
+    document.getElementById('NewTargetTemp').innerHTML = parseFloat(Values['TargetTemp']).toFixed(1);
+    document.getElementById('SetTargetTemp').style.visibility = 'visible';
+}
+
+function TargetTemp(id) {
+    var val = document.getElementById('NewTargetTemp').innerHTML;
+    if (id == 'ttx') {
+        HideTargetTemp();
+    } else if (id == 'ttb') {
+        if(val.length > 1) {
+            val = parseFloat(val) * 10;
+            val = val.toString().slice(0, -1);
+            val = parseFloat(val) / 10;
+            document.getElementById('NewTargetTemp').innerHTML = val.toFixed(1);
+        } if (val.length == 1) {
+            document.getElementById('NewTargetTemp').innerHTML = '';
+        }
+    } else if (id == 'ttc') {
+        document.getElementById('NewTargetTemp').innerHTML = '';
+    } else if (id == 'ttok') {
+        SetTargetTemp(document.getElementById('NewTargetTemp').innerHTML);
+    } else {
+        if(val.length == 0) {
+            document.getElementById('NewTargetTemp').innerHTML = "." + id.substring(2);
+        } else if(val.length < 4){
+            val = parseFloat(val) * 10;
+            val = val.toString();
+            val += id.substring(2);
+            val = (parseFloat(val) / 10).toFixed(1);
+            document.getElementById('NewTargetTemp').innerHTML = val;
+        }
+    }
+}
+
+function ToggleLogs(){
+    if (document.getElementById('NewLogEnabled').value == 'true') {
+        document.getElementById('NewLogEnabled').value = 'false';
+        document.getElementById('LogEnabled').innerHTML = 'Disabled';
+        document.getElementById('LogEnabled').classList.remove('ButtonBlue');
+    } else {
+        document.getElementById('NewLogEnabled').value = 'true';
+        document.getElementById('LogEnabled').innerHTML = 'Enabled';
+        document.getElementById('LogEnabled').classList.add('ButtonBlue');
+    }
+}
+
+function AdjustLogFreq(amount) {
+    var newVal = parseInt(document.getElementById('NewLogFrequency').value);
+    newVal += amount;
+    document.getElementById('NewLogFrequency').value = newVal;
+    document.getElementById('LogFrequency').innerHTML = newVal;
+}
+
+function AdjustBeaconFreq(amount) {
+    var newVal = parseInt(document.getElementById('NewBeaconFrequency').value)
+    newVal += amount;
+    document.getElementById('NewBeaconFrequency').value = newVal;
+    document.getElementById('BeaconFrequency').innerHTML = newVal;
+}
+
+function ToggleTempUnits(unit) {
+    if (unit == 'f') {
+        document.getElementById('NewTempUnits').value = 'f';
+        document.getElementById('TempUnitsF').classList.add('ButtonBlue');
+        document.getElementById('TempUnitsC').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.remove('ButtonBlue');
+    } else if (unit == 'c') {
+        document.getElementById('NewTempUnits').value = 'c';
+        document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsC').classList.add('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.remove('ButtonBlue');
+    } else {
+        document.getElementById('NewTempUnits').value = 'k';
+        document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsC').classList.remove('ButtonBlue');
+        document.getElementById('TempUnitsK').classList.add('ButtonBlue');
+    }
+}
+
+function ToggleGravUnits(unit) {
+    if (unit == 'brix') {
+        document.getElementById('NewGravUnits').value = 'brix';
+        document.getElementById('GravUnitsB').classList.add('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.remove('ButtonBlue');
+    } else if (unit == 'plato') {
+        document.getElementById('NewGravUnits').value = 'plato';
+        document.getElementById('GravUnitsB').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.add('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.remove('ButtonBlue');
+    } else {
+        document.getElementById('NewGravUnits').value = 'sg';
+        document.getElementById('GravUnitsB').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsP').classList.remove('ButtonBlue');
+        document.getElementById('GravUnitsS').classList.add('ButtonBlue');
+    }
+}
+
+function AdjustHysteresis(amount) {
+    var newVal = parseFloat(document.getElementById('NewHysteresis').value);
+    newVal += amount;
+    newVal = newVal.toFixed(1);
+    document.getElementById('NewHysteresis').value = newVal;
+    document.getElementById('Hysteresis').innerHTML = newVal;
+}
+
+function AdjustCycleFreq(amount) {
+    var newVal = parseInt(document.getElementById('NewCycleFrequency').value);
+    newVal += amount;
+    document.getElementById('NewCycleFrequency').value = newVal;
+    document.getElementById('CycleFrequency').innerHTML = newVal;
+}
+
+function Power(action) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+        }
+    };
+
+    xhttp.open("GET", "power.php?action=" + action, true);
+    xhttp.send();
 }
