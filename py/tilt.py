@@ -12,6 +12,7 @@ import re
 import requests
 import sys
 import signal
+import threading
 import time
 
 #Global Variables
@@ -34,6 +35,19 @@ AY = 0.6855
 AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
+
+#Metric Values to be fed from the metric thread
+mMainAmps = 0
+mMainVolts = 0
+mColdAmps = 0
+mHotAmps = 0
+mProbeTemp = 0
+
+#Trigger values to be fed from main thread
+mColdOn = False
+mColdOff = False
+mHotOn = False
+mHotOff = False
 
 #Initialize Tilt
 tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
@@ -103,6 +117,19 @@ def post_data(customer_id, shared_key, body, log_type):
 
     response = requests.post(uri,data=body, headers=headers)
 
+def UpdateMetrics():
+  global mMainAmps, mMainVolts, mColdAmps, mHotAmps, mProbeTemp
+  global mColdOn, mColdOff, mHotOn, mHotOff
+  while True:
+    mMainAmps = GetAmps(MAIN)
+    mMainVolts = GetVolts()
+    mColdAmps = GetAmps(COLD)
+    mHotAmps = GetAmps
+    time.sleep(1)
+
+MetricThread = threading.Thread(target=UpdateMetrics)
+MetricThread.start()
+MetricThread.join()
 
 try:
   signal.signal(signal.SIGINT, OnKill)
@@ -136,12 +163,14 @@ try:
   data['TargetTemp'] = Settings['TargetTemp']
   data['Hysteresis'] = Settings['Hysteresis']
   for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
-    data[color]['Name'] = ""
+    data[color]['Name'] = "Unnamed"
   for color in Settings['EnabledTilts']:
     data[color]['Name'] = Settings[color]
   data['TempUnits'] = Settings['TempUnits']
   data['GravUnits'] = Settings['GravUnits']
   data['LogEnabled'] = Settings['LogEnabled']
+  #Zero kWh
+  data['kWh'] = 0
   #Save the new data
   d = open('/var/www/html/py/data.json', 'w')
   json.dump(data, d)
@@ -158,9 +187,6 @@ try:
 
   while RUN:
     CurrTime = datetime.datetime.now()
-    #t = open('/var/www/html/py/uptime', 'w')
-    #t.write(str(CurrTime - START_TIME))
-    #t.close()
     d = open('/var/www/html/py/data.json')
     data = json.load(d)
     d.close()
@@ -176,7 +202,7 @@ try:
       data['TargetTemp'] = Settings['TargetTemp']
       data['Hysteresis'] = Settings['Hysteresis']
       for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
-        data[color]['Name'] = ""
+        data[color]['Name'] = "Unnamed"
       for color in Settings['EnabledTilts']:
         data[color]['Name'] = Settings[color]
       data['TempUnits'] = Settings['TempUnits']
@@ -187,16 +213,18 @@ try:
         nextLog = loop
       else:
         nextLog = -1
-      
-    #Refresh Metrics
     
+
+    #Refresh Metrics
     data['MainAmps'] = GetAmps(MAIN)
     data['HotAmps'] = GetAmps(HOT)
     data['ColdAmps'] = GetAmps(COLD)
     data['MainVolts'] = GetVolts()
     data['ProbeTemp'] = DAQC.getTEMP(ADDR, TEMP, 'c')
-    data['CpuTemp'] = CPUTemperature().temperature
-
+    if ((loop % 10) == 0):
+      data['CpuTemp'] = CPUTemperature().temperature
+    kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
+    data['kWh'] += kWh
     #Process Beacons?
     if loop == nextBeacon:
       for color in Settings['EnabledTilts']:
@@ -206,6 +234,7 @@ try:
           if match != None:
             data[color]['Temp'] = float(match.group(1))
             data[color]['Grav'] = float(match.group(2))
+            data['LastBeacon'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if Debug:
               print("%s - %f SG at %f deg" % (color, float(match.group(2)), float(match.group(1))))
           else:
@@ -216,7 +245,7 @@ try:
         else:
           data[color]['Temp'] = 0.0
           data[color]['Grav'] = 1.0
-      data['LastBeacon'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
       #f = open('/var/www/html/py/lastbeacon', 'w')
       #f.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
       #f.close()
@@ -283,6 +312,7 @@ except Exception as e:
   f.close()
 
 now = datetime.datetime.now()
+
 tilt.stop()
 f = open('/var/www/html/python_errors.log', 'a')
 f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))

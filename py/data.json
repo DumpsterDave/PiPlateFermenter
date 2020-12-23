@@ -41,6 +41,7 @@
     },
     "MainVolts": 0.0,
     "MainAmps": 0.0,
+    "kwH": 0.0,
     "HotAmps": 0.0,
     "HotState": 0,
     "ColdAmps": 0.0,
