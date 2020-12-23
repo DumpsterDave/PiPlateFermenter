@@ -12,7 +12,6 @@ import re
 import requests
 import sys
 import signal
-import threading
 import time
 
 #Global Variables
@@ -35,19 +34,6 @@ AY = 0.6855
 AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
-
-#Metric Values to be fed from the metric thread
-mMainAmps = 0
-mMainVolts = 0
-mColdAmps = 0
-mHotAmps = 0
-mProbeTemp = 0
-
-#Trigger values to be fed from main thread
-mColdOn = False
-mColdOff = False
-mHotOn = False
-mHotOff = False
 
 #Initialize Tilt
 tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
@@ -117,20 +103,6 @@ def post_data(customer_id, shared_key, body, log_type):
 
     response = requests.post(uri,data=body, headers=headers)
 
-def UpdateMetrics():
-  global mMainAmps, mMainVolts, mColdAmps, mHotAmps, mProbeTemp
-  global mColdOn, mColdOff, mHotOn, mHotOff
-  while True:
-    mMainAmps = GetAmps(MAIN)
-    mMainVolts = GetVolts()
-    mColdAmps = GetAmps(COLD)
-    mHotAmps = GetAmps
-    time.sleep(1)
-
-MetricThread = threading.Thread(target=UpdateMetrics)
-MetricThread.start()
-MetricThread.join()
-
 try:
   signal.signal(signal.SIGINT, OnKill)
   signal.signal(signal.SIGTERM, OnKill)
@@ -169,6 +141,9 @@ try:
   data['TempUnits'] = Settings['TempUnits']
   data['GravUnits'] = Settings['GravUnits']
   data['LogEnabled'] = Settings['LogEnabled']
+  data['LogFrequency'] = Settings['LogFrequency']
+  data['BeaconFrequency'] = Settings['BeaconFrequency']
+  data['CycleFrequency'] = Settings['CycleFrequency']
   #Zero kWh
   data['kWh'] = 0
   #Save the new data
@@ -208,6 +183,9 @@ try:
       data['TempUnits'] = Settings['TempUnits']
       data['GravUnits'] = Settings['GravUnits']
       data['LogEnabled'] = Settings['LogEnabled']
+      data['LogFrequency'] = Settings['LogFrequency']
+      data['BeaconFrequency'] = Settings['BeaconFrequency']
+      data['CycleFrequency'] = Settings['CycleFrequency']
       os.remove('/var/www/html/py/reload')
       if Settings['LogEnabled'] == True:
         nextLog = loop
@@ -220,9 +198,9 @@ try:
     data['HotAmps'] = GetAmps(HOT)
     data['ColdAmps'] = GetAmps(COLD)
     data['MainVolts'] = GetVolts()
-    data['ProbeTemp'] = DAQC.getTEMP(ADDR, TEMP, 'c')
     if ((loop % 10) == 0):
-      data['CpuTemp'] = CPUTemperature().temperature
+      data['ProbeTemp'] = DAQC.getTEMP(ADDR, TEMP, 'c')
+    data['CpuTemp'] = CPUTemperature().temperature
     kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
     data['kWh'] += kWh
     #Process Beacons?
@@ -301,7 +279,9 @@ try:
     d = open('/var/www/html/py/data.json', 'w')
     json.dump(data, d)
     d.close()
-    time.sleep(1)
+    loopTime = datetime.datetime.now() - CurrTime
+    if loopTime.total_seconds < 1:
+      time.sleep(1)
 
 except Exception as e:
   now = datetime.datetime.now()

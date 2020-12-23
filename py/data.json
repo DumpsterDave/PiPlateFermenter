@@ -51,8 +51,11 @@
     "TargetTemp": 40.0,
     "Hysteresis": 0.5,
     "TempUnits": "f",
-    "GravUnits": "SG",
+    "GravUnits": "sg",
     "Uptime": "00:00:00",
     "LastBeacon": "",
-    "LogEnabled": true
+    "LogEnabled": false,
+    "LogFrequency": 300,
+    "BeaconFrequency": 15,
+    "CycleFrequency": 300
 }
