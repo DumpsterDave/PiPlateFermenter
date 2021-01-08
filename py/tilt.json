@@ -1,0 +1,99 @@
+{
+    "Colors": ["Black","Blue","Green","Orange","Pink","Purple","Red","Yellow"],
+    "Black":{
+        "Name": "Disabled",
+        "Uuid": "a495bb30c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Blue":{
+        "Name": "Disabled",
+        "Uuid": "a495bb60c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Green":{
+        "Name": "Disabled",
+        "Uuid": "a495bb20c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Orange":{
+        "Name": "Disabled",
+        "Uuid": "a495bb50c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Pink":{
+        "Name": "Disabled",
+        "Uuid": "a495bb80c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Purple":{
+        "Name": "Disabled",
+        "Uuid": "a495bb40c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Red":{
+        "Name": "Disabled",
+        "Uuid": "a495bb10c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    },
+    "Yellow":{
+        "Name": "Disabled",
+        "Uuid": "a495bb70c5b14b44b5121370f02d74de",
+        "GravLow": 1.000,
+        "GravLowRef": 1.000,
+        "GravHigh": 1.100,
+        "GravHighRef": 1.100,
+        "TempLow": 0.0,
+        "TempLowRef": 0.0,
+        "TempHigh": 50.0,
+        "TempHighRef": 50.0
+    }
+}

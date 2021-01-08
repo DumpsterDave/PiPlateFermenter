@@ -1,8 +1,6 @@
 import piplates.DAQCplate as DAQC
 import TiltHydrometer
 import base64
-import blescan
-import bluetooth._bluetooth as bluez
 import datetime
 import hashlib
 import hmac
@@ -15,6 +13,7 @@ import requests
 import sys
 import signal
 import time
+import tilt
 
 #Global Variables
 RUN = True
