@@ -76,40 +76,49 @@ def OnKill(signum, frame):
   DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
   DAQC.clrDOUTbit(ADDR, COLD) #Cold Off
 
-# Build the API signature
 def build_signature(customer_id, shared_key, date, content_length, method, content_type, resource):
-    x_headers = 'x-ms-date:' + date
-    string_to_hash = method + "\n" + str(content_length) + "\n" + content_type + "\n" + x_headers + "\n" + resource
-    bytes_to_hash = bytes(string_to_hash).encode('utf-8')  
-    decoded_key = base64.b64decode(shared_key)
-    encoded_hash = base64.b64encode(hmac.new(decoded_key, bytes_to_hash, digestmod=hashlib.sha256).digest())
-    authorization = "SharedKey {}:{}".format(customer_id,encoded_hash)
-    return authorization
+  x_headers = 'x-ms-date:' + date
+  string_to_hash = method + "\n" + str(content_length) + "\n" + content_type + "\n" + x_headers + "\n" + resource
+  bytes_to_hash = bytes(string_to_hash).encode('utf-8')  
+  decoded_key = base64.b64decode(shared_key)
+  encoded_hash = base64.b64encode(hmac.new(decoded_key, bytes_to_hash, digestmod=hashlib.sha256).digest())
+  authorization = "SharedKey {}:{}".format(customer_id,encoded_hash)
+  return authorization
 
-# Build and send a request to the POST API
 def post_data(customer_id, shared_key, body, log_type):
-    method = 'POST'
-    content_type = 'application/json'
-    resource = '/api/logs'
-    rfc1123date = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-    content_length = len(body)
-    signature = build_signature(customer_id, shared_key, rfc1123date, content_length, method, content_type, resource)
-    uri = 'https://' + customer_id + '.ods.opinsights.azure.com' + resource + '?api-version=2016-04-01'
+  method = 'POST'
+  content_type = 'application/json'
+  resource = '/api/logs'
+  rfc1123date = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+  content_length = len(body)
+  signature = build_signature(customer_id, shared_key, rfc1123date, content_length, method, content_type, resource)
+  uri = 'https://' + customer_id + '.ods.opinsights.azure.com' + resource + '?api-version=2016-04-01'
 
-    headers = {
-        'content-type': content_type,
-        'Authorization': signature,
-        'Log-Type': log_type,
-        'x-ms-date': rfc1123date
-    }
+  headers = {
+    'content-type': content_type,
+    'Authorization': signature,
+    'Log-Type': log_type,
+    'x-ms-date': rfc1123date
+  }
 
-    response = requests.post(uri,data=body, headers=headers)
+  return requests.post(uri,data=body, headers=headers)
 
+def WriteLog(message):
+  global Debug
+  now = datetime.datetime.now()
+  if Debug:
+    print(message)
+  f = open('/var/www/html/python_errors.log', 'a')
+  f.write("%s - TILT [%i] - %s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"), sys.exc_info()[-1].tb_lineno, message))
+  f.close()
+
+#Signal handling
+signal.signal(signal.SIGINT, OnKill)
+signal.signal(signal.SIGTERM, OnKill)
+
+#Initial Load
 try:
-  signal.signal(signal.SIGINT, OnKill)
-  signal.signal(signal.SIGTERM, OnKill)
-  
-  #Initial Settings Load
+  #Settings
   f = open("/var/www/html/py/conf.json")
   Settings = json.load(f)
   f.close
@@ -129,10 +138,11 @@ try:
     f.close()
     DirtySettings = False
 
-  #Initial Data Load
+  #Data
   f = open('/var/www/html/py/data.json')
   data = json.load(f)
   f.close()
+
   #Copy some settings to the data structure
   data['TargetTemp'] = Settings['TargetTemp']
   data['Hysteresis'] = Settings['Hysteresis']
@@ -152,17 +162,21 @@ try:
   d = open('/var/www/html/py/data.json', 'w')
   json.dump(data, d)
   d.close()
+except Exception as e:
+  WriteLog(e)
 
-  #Initialize loop counter
-  loop = 0
-  nextBeacon = loop + Settings['BeaconFrequency']
-  if Settings['LogEnabled'] == True:
-    nextLog = loop + Settings['LogFrequency']
-  else:
-    nextLog = -1
-  nextCycle = loop + Settings['CycleFrequency']
+#Initialize loop counter
+loop = 0
+nextBeacon = loop + Settings['BeaconFrequency']
+if Settings['LogEnabled'] == True:
+  nextLog = loop + Settings['LogFrequency']
+else:
+  nextLog = -1
+nextCycle = loop + Settings['CycleFrequency']
 
-  while RUN:
+while RUN:
+  #Refresh Data/Settings
+  try:
     CurrTime = datetime.datetime.now()
     d = open('/var/www/html/py/data.json')
     data = json.load(d)
@@ -205,7 +219,11 @@ try:
     data['CpuTemp'] = CPUTemperature().temperature
     kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
     data['kWh'] += kWh
-    #Process Beacons?
+  except Exception as e:
+    WriteLog(e)
+  
+  #Process Beacons
+  try:
     if loop == nextBeacon:
       for color in Settings['EnabledTilts']:
         raw = str(tilt.getValue(color))
@@ -225,30 +243,32 @@ try:
         else:
           data[color]['Temp'] = 0.0
           data[color]['Grav'] = 1.0
+  except Exception as e:
+    WriteLog(e)
+  finally:
+    nextBeacon += Settings['BeaconFrequency']
 
-      #f = open('/var/www/html/py/lastbeacon', 'w')
-      #f.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-      #f.close()
-      nextBeacon += Settings['BeaconFrequency']
-
-    if loop == nextCycle:
-      if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])):
+  #Process Heating/Cooling Cycle
+  try:
+    if loop >= nextCycle:
+      if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])): #Too Cold, turn on heat
         DAQC.clrDOUTbit(ADDR, COLD)
         DAQC.setDOUTbit(ADDR, HOT)
         data['HotState'] = 1
         data['ColdState'] = 0
-      elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])):
+        nextCycle += Settings['CycleFrequency']
+      elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])): #Too Hot, turn on cold
         DAQC.clrDOUTbit(ADDR, HOT)
         DAQC.setDOUTbit(ADDR, COLD)
         data['HotState'] = 0
         data['ColdState'] = 1
-      else:
-        DAQC.clrDOUTbit(ADDR, HOT)
-        DAQC.clrDOUTbit(ADDR, COLD)
-        data['HotState'] = 0
-        data['ColdState'] = 0
-      nextCycle += Settings['CycleFrequency']
+        nextCycle += Settings['CycleFrequency']
+  except Exception as e:
+    WriteLog(e)
 
+  
+  #Send Data to Log Analytics
+  try:
     if loop == nextLog:
       for color in Settings['EnabledTilts']:
         if Debug:
@@ -269,29 +289,33 @@ try:
           "Voltage": %f,
           "CpuTemp": %f,
           "Uptime": "%s",
-          "LastBeacon": "%s"
-        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data['LastBeacon'])
+          "LastBeacon": "%s",
+          "TotalkWh": %f
+        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data['LastBeacon'], data['kWh'])
         
-        post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
+        result = post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
         if Debug:
-          print("Logging %s to Azure: OK\r" % (color))
-      nextLog += Settings['LogFrequency']
+          print("Logging %s to Azure: %i\r" % (color, result.status_code))
+        if result.status_code != 200:
+          WriteLog("Logging " + color " to Azure not OK: " + result.status_code)  
+  except Exception as e:
+    WriteLog(e)
+  finally:
+    nextLog += Settings['LogFrequency']
+  
 
-    loop += 1
+  try:
     d = open('/var/www/html/py/data.json', 'w')
     json.dump(data, d)
     d.close()
-    loopTime = datetime.datetime.now() - CurrTime
-    if loopTime.total_seconds < 1:
-      time.sleep(1)
-
-except Exception as e:
-  now = datetime.datetime.now()
-  if Debug:
-    print(e)
-  f = open('/var/www/html/python_errors.log', 'a')
-  f.write("%s - TILT [%i] - %s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"), sys.exc_info()[-1].tb_lineno, e))
-  f.close()
+  except Exception as e:
+    WriteLog(e)
+  finally:
+    loop += 1
+  
+  loopTime = (datetime.datetime.now() - CurrTime).total_seconds * 1e3
+  if loopTime < 1000
+    time.sleep((1000 - loopTime) * .001)
 
 now = datetime.datetime.now()
 
