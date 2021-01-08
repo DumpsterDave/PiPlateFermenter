@@ -1,6 +1,8 @@
 import piplates.DAQCplate as DAQC
 import TiltHydrometer
 import base64
+import blescan
+import bluetooth._bluetooth as bluez
 import datetime
 import hashlib
 import hmac
