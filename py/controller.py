@@ -4,6 +4,7 @@ import base64
 import datetime
 import hashlib
 import hmac
+import inspect
 from gpiozero import CPUTemperature
 import json
 import math
@@ -13,7 +14,6 @@ import requests
 import sys
 import signal
 import time
-import tilt
 
 #Global Variables
 RUN = True
@@ -105,10 +105,14 @@ def post_data(customer_id, shared_key, body, log_type):
 def WriteLog(message):
   global Debug
   now = datetime.datetime.now()
+  callerFrameRecord = inspect.stack()[1]
+  frame = callerFrameRecord[0]
+  info = inspect.getframeinfo(frame)
+
   if Debug:
     print(message)
   f = open('/var/www/html/python_errors.log', 'a')
-  f.write("%s - TILT [%i] - %s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"), sys.exc_info()[-1].tb_lineno, message))
+  f.write("%s - TILT [%i] - %s\n" % (now.strftime("%Y-%m-%d %H:%M:%S"), info.lineno, message))
   f.close()
 
 #Signal handling
@@ -235,17 +239,18 @@ while RUN:
             if Debug:
               print("%s - %f SG at %f deg" % (color, float(match.group(2)), float(match.group(1))))
           else:
-            data[color]['Temp'] = 0.0
-            data[color]['Grav'] = 1.0
+            data[color]['Temp'] = -99.9
+            data[color]['Grav'] = -1.0
             if Debug:
               print("No Signal from %s tilt!" % (color))
         else:
-          data[color]['Temp'] = 0.0
-          data[color]['Grav'] = 1.0
+          data[color]['Temp'] = -88.8
+          data[color]['Grav'] = -2.0
   except Exception as e:
     WriteLog(e)
   finally:
-    nextBeacon += Settings['BeaconFrequency']
+    if loop == nextBeacon:
+      nextBeacon += Settings['BeaconFrequency']
 
   #Process Heating/Cooling Cycle
   try:
@@ -300,7 +305,8 @@ while RUN:
   except Exception as e:
     WriteLog(e)
   finally:
-    nextLog += Settings['LogFrequency']
+    if loop == nextLog:
+      nextLog += Settings['LogFrequency']
   
 
   try:
@@ -312,7 +318,7 @@ while RUN:
   finally:
     loop += 1
   
-  loopTime = (datetime.datetime.now() - CurrTime).total_seconds * 1e3
+  loopTime = (datetime.datetime.now() - CurrTime).total_seconds() * 1e3
   if loopTime < 1000:
     time.sleep((1000 - loopTime) * .001)
 
