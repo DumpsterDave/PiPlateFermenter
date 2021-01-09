@@ -101,7 +101,12 @@ function RefreshElements() {
             document.getElementById("ColdAmps").innerHTML = Values['ColdAmps'].toFixed(1);
             document.getElementById("HotAmps").innerHTML = Values['HotAmps'].toFixed(1);
             var UpTimeParts = Values['Uptime'].split(":");
-            document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + parseFloat(UpTimeParts[2]).toFixed(2);
+            var Sec = parseFloat(UpTimeParts[2]).toFixed(2);
+            var SecString = Sec;
+            if (Sec < 10) {
+                SecString = "0" + Sec;
+            }
+            document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + SecString + " (" + parseInt(Values['SinceLastCycle']) + ")";
             document.getElementById("LastLog").innerHTML = Values['LastLog'];
             document.getElementById("CpuTemp").innerHTML = Values['CpuTemp'].toFixed(1) + TempSymbol;
 

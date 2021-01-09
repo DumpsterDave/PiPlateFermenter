@@ -17,7 +17,7 @@
         "Name": "Heffeweizen",
         "Temp": 17.77777777777778,
         "Grav": 1,
-        "LastBeacon": "2021-01-09 10:13:19",
+        "LastBeacon": "2021-01-09 12:03:58",
         "Enabled": true
     },
     "Orange": {
@@ -28,11 +28,11 @@
         "Enabled": false
     },
     "Pink": {
-        "Name": "Water",
-        "Temp": 0,
-        "Grav": -0.16216216216216206,
+        "Name": "Disabled",
+        "Temp": 17.77777777777778,
+        "Grav": 1.0883243243243244,
         "LastBeacon": "Never",
-        "Enabled": true
+        "Enabled": false
     },
     "Purple": {
         "Name": "Disabled",
@@ -55,21 +55,22 @@
         "LastBeacon": "Never",
         "Enabled": false
     },
-    "MainVolts": 116.24959999999999,
+    "MainVolts": 118.19519999999999,
     "MainAmps": 0.44,
-    "kWh": 0.0010485876572160003,
+    "kWh": 0.006150018778112012,
     "HotAmps": 0,
     "HotState": 0,
     "ColdAmps": 0,
-    "ColdState": 0,
-    "CpuTemp": 56.382,
-    "ProbeTemp": -0.0625,
-    "TargetTemp": -0.3333333333333341,
-    "Hysteresis": 0.4,
+    "ColdState": 1,
+    "CpuTemp": 55.844,
+    "ProbeTemp": 20.0625,
+    "TargetTemp": -0.22222222222222143,
+    "Hysteresis": 0.5,
     "TempUnits": "f",
     "GravUnits": "sg",
-    "Uptime": "0:01:17.448365",
+    "Uptime": "0:07:29.976369",
     "LastLog": "",
+    "SinceLastCycle": 0,
     "LogEnabled": false,
     "LogFrequency": 300,
     "BeaconFrequency": 15,

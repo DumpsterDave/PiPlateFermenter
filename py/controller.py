@@ -172,6 +172,8 @@ try:
   data['LogFrequency'] = Settings['LogFrequency']
   data['BeaconFrequency'] = Settings['BeaconFrequency']
   data['CycleFrequency'] = Settings['CycleFrequency']
+  data['ColdState'] = 0  #Initialize the hot and cold state to off
+  data['HotState'] = 0
   #Zero kWh
   data['kWh'] = 0
   #Save the new data
@@ -232,6 +234,7 @@ while RUN:
     
 
     #Refresh Metrics
+    data['SinceLastCycle'] = sinceLastCycle
     data['MainAmps'] = GetAmps(MAIN)
     data['HotAmps'] = GetAmps(HOT)
     data['ColdAmps'] = GetAmps(COLD)
@@ -259,19 +262,29 @@ while RUN:
 
   #Process Heating/Cooling Cycle
   try:
-    if loop >= nextCycle:
+    if sinceLastCycle >= Settings['CycleFrequency']:
       if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])): #Too Cold, turn on heat
-        DAQC.clrDOUTbit(ADDR, COLD)
-        DAQC.setDOUTbit(ADDR, HOT)
-        data['HotState'] = 1
-        data['ColdState'] = 0
-        nextCycle += Settings['CycleFrequency']
+        if data['HotState'] == 0:
+          sinceLastCycle = 0 #Heat is off and will be toggled, reset sinceLastCycle to 0
+          DAQC.clrDOUTbit(ADDR, COLD)
+          DAQC.setDOUTbit(ADDR, HOT)
+          data['HotState'] = 1
+          data['ColdState'] = 0
       elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])): #Too Hot, turn on cold
-        DAQC.clrDOUTbit(ADDR, HOT)
-        DAQC.setDOUTbit(ADDR, COLD)
-        data['HotState'] = 0
-        data['ColdState'] = 1
-        nextCycle += Settings['CycleFrequency']
+        if data['ColdState'] == 0:
+          sinceLastCycle = 0 #Cold is off and will be toggled, reset sinceLastCycle to 0
+          DAQC.clrDOUTbit(ADDR, HOT)
+          DAQC.setDOUTbit(ADDR, COLD)
+          data['HotState'] = 0
+          data['ColdState'] = 1
+      else:
+        if (data['ColdState'] == 1) or (data['HotState'] == 1):
+          sinceLastCycle = 0 #Cold or hot is on and we are now in the Hysteresis band.  Shut them off
+          DAQC.clrDOUTbit(ADDR, HOT)
+          DAQC.clrDOUTbit(ADDR, COLD)
+          data['HotState'] = 0
+          data['ColdState'] = 0
+
   except Exception as e:
     WriteLog(e)
 
