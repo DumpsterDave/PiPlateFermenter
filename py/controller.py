@@ -1,5 +1,4 @@
 import piplates.DAQCplate as DAQC
-import TiltHydrometer
 import base64
 import datetime
 import hashlib
@@ -13,6 +12,7 @@ import re
 import requests
 import sys
 import signal
+import tilt
 import time
 
 #Global Variables
@@ -26,6 +26,7 @@ TEMP = 0 #DS18B20 (DIN)
 BEACON_MIN = 10 #minimum amount of time between beacon cycles
 LOG_MIN = 10 #minimum amount of time between Log Entries
 CYCLE_MIN = 10 #minimum number of seconds between hot/cold cycles
+TILT_COLORS = ["Black", "Blue", "Green", "Orange", "Pink", "Purple", "Red", "Yellow"]
 
 VSHIFT = -2.5
 VMULT = 121.6
@@ -35,11 +36,16 @@ AY = 0.6855
 AZ = 0.4479
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
+Settings = None
+Data = None
+CurrTime = None
 
 #Initialize Tilt
-tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
-tilt.loadSettings()
-tilt.start()
+tilt = tilt.Tilt()
+tilt.Start()
+#tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
+#tilt.loadSettings()
+#tilt.start()
 
 Debug = False
 if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
@@ -74,6 +80,10 @@ def OnKill(signum, frame):
   RUN = False
   DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
   DAQC.clrDOUTbit(ADDR, COLD) #Cold Off
+  now = datetime.datetime.now()
+  f = open('/var/www/html/python_errors.log', 'a')
+  f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))
+  f.close()
 
 def build_signature(customer_id, shared_key, date, content_length, method, content_type, resource):
   x_headers = 'x-ms-date:' + date
@@ -149,10 +159,13 @@ try:
   #Copy some settings to the data structure
   data['TargetTemp'] = Settings['TargetTemp']
   data['Hysteresis'] = Settings['Hysteresis']
-  for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
-    data[color]['Name'] = "Unnamed"
+  for color in TILT_COLORS:
+    data[color]['Name'] = "Disabled"
+    data[color]['LastBeacon'] = "Never"
+    data[color]['Enabled'] = False
   for color in Settings['EnabledTilts']:
     data[color]['Name'] = Settings[color]
+    data[color]['Enabled'] = True
   data['TempUnits'] = Settings['TempUnits']
   data['GravUnits'] = Settings['GravUnits']
   data['LogEnabled'] = Settings['LogEnabled']
@@ -170,7 +183,11 @@ except Exception as e:
 
 #Initialize loop counter
 loop = 0
-nextBeacon = loop + Settings['BeaconFrequency']
+sinceLastCycle = 0
+if Settings['BeaconEnabled']:
+  nextBeacon = loop + Settings['BeaconFrequency']
+else:
+  nextBeacon = -1
 if Settings['LogEnabled'] == True:
   nextLog = loop + Settings['LogFrequency']
 else:
@@ -195,10 +212,12 @@ while RUN:
       #Copy some settings to the data structure
       data['TargetTemp'] = Settings['TargetTemp']
       data['Hysteresis'] = Settings['Hysteresis']
-      for color in TiltHydrometer.TILTHYDROMETER_COLOURS:
-        data[color]['Name'] = "Unnamed"
+      for color in TILT_COLORS:
+        data[color]['Name'] = "Disabled"
+        data[color]['Enabled'] = False
       for color in Settings['EnabledTilts']:
         data[color]['Name'] = Settings[color]
+        data[color]['Enabled'] = True
       data['TempUnits'] = Settings['TempUnits']
       data['GravUnits'] = Settings['GravUnits']
       data['LogEnabled'] = Settings['LogEnabled']
@@ -227,25 +246,11 @@ while RUN:
   
   #Process Beacons
   try:
-    if loop == nextBeacon:
+    if (loop == nextBeacon) and (Settings['BeaconEnabled']):
       for color in Settings['EnabledTilts']:
-        raw = str(tilt.getValue(color))
-        if raw != None:
-          match = re.search(TILT_PATTERN, raw)
-          if match != None:
-            data[color]['Temp'] = float(match.group(1))
-            data[color]['Grav'] = float(match.group(2))
-            data['LastBeacon'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if Debug:
-              print("%s - %f SG at %f deg" % (color, float(match.group(2)), float(match.group(1))))
-          else:
-            data[color]['Temp'] = -99.9
-            data[color]['Grav'] = -1.0
-            if Debug:
-              print("No Signal from %s tilt!" % (color))
-        else:
-          data[color]['Temp'] = -88.8
-          data[color]['Grav'] = -2.0
+        data[color]['Temp'] = tilt.GetCalTemp(color)
+        data[color]['Grav'] = tilt.GetCalGrav(color)
+        data[color]['LastBeacon'] = tilt.LastBeacon[color]
   except Exception as e:
     WriteLog(e)
   finally:
@@ -295,13 +300,15 @@ while RUN:
           "Uptime": "%s",
           "LastBeacon": "%s",
           "TotalkWh": %f
-        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data['LastBeacon'], data['kWh'])
+        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data[color]['LastBeacon'], data['kWh'])
         
         result = post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
         if Debug:
           print("Logging %s to Azure: %i\r" % (color, result.status_code))
         if result.status_code != 200:
-          WriteLog("Logging {} to Azure failed: {}".format(color, result.status_code))  
+          WriteLog("Logging {} to Azure failed: {}".format(color, result.status_code))
+        else:
+          data['LastLog'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
   except Exception as e:
     WriteLog(e)
   finally:
@@ -317,14 +324,12 @@ while RUN:
     WriteLog(e)
   finally:
     loop += 1
+    sinceLastCycle += 1
   
   loopTime = (datetime.datetime.now() - CurrTime).total_seconds() * 1e3
   if loopTime < 1000:
     time.sleep((1000 - loopTime) * .001)
 
-now = datetime.datetime.now()
-
-tilt.stop()
-f = open('/var/www/html/python_errors.log', 'a')
-f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))
-f.close()
+tilt.Stop()
+DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
+DAQC.clrDOUTbit(ADDR, COLD) #Cold Off

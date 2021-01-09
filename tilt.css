@@ -105,7 +105,29 @@ a {
     text-align: center;
 }
 
-.BeerTemp {
+.TiltData {
+    position: relative;
+    width: 100%;
+    height: 3vh;
+    font-size: 2vh;
+    line-height: 3vh;
+    display: grid;
+    grid-template-columns: 80% 20%;
+    grid-row: 1;
+    color: #ffffff; 
+}
+
+.TiltBeacon {
+    position: relative;
+    width: 100%;
+    height: 3vh;
+    font-size: 2vh;
+    line-height: 3vh;
+    text-align: left;
+    color: #ffffff;
+}
+
+.TiltTemp {
     position: relative;
     width: 100%;
     height: 3vh;
@@ -353,6 +375,19 @@ a {
 }
 #MetricButtons {
     z-index: 2;
+}
+
+#BeerToggle{
+    position: fixed;
+    right: 16px;
+    top: 0vw;
+    width: 64px;
+    height: 64px;
+    z-index: 4;
+}
+
+#TiltToggle {
+    cursor: pointer;
 }
 
 #BeerName{

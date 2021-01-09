@@ -1,59 +1,75 @@
 {
     "Black": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
     "Blue": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
     "Green": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Heffeweizen",
+        "Temp": 17.77777777777778,
+        "Grav": 1,
+        "LastBeacon": "2021-01-09 10:13:19",
+        "Enabled": true
     },
     "Orange": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
     "Pink": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Water",
+        "Temp": 0,
+        "Grav": -0.16216216216216206,
+        "LastBeacon": "Never",
+        "Enabled": true
     },
     "Purple": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
     "Red": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
     "Yellow": {
-        "Name": "",
-        "Temp": 0.0,
-        "Grav": 1.0
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
     },
-    "MainVolts": 0.0,
-    "MainAmps": 0.0,
-    "kwH": 0.0,
-    "HotAmps": 0.0,
+    "MainVolts": 116.24959999999999,
+    "MainAmps": 0.44,
+    "kWh": 0.0010485876572160003,
+    "HotAmps": 0,
     "HotState": 0,
-    "ColdAmps": 0.0,
+    "ColdAmps": 0,
     "ColdState": 0,
-    "CpuTemp": 0.0,
-    "ProbeTemp": 0.0,
-    "TargetTemp": 40.0,
-    "Hysteresis": 0.5,
+    "CpuTemp": 56.382,
+    "ProbeTemp": -0.0625,
+    "TargetTemp": -0.3333333333333341,
+    "Hysteresis": 0.4,
     "TempUnits": "f",
     "GravUnits": "sg",
-    "Uptime": "00:00:00",
-    "LastBeacon": "",
+    "Uptime": "0:01:17.448365",
+    "LastLog": "",
     "LogEnabled": false,
     "LogFrequency": 300,
     "BeaconFrequency": 15,

@@ -1,5 +1,6 @@
 import blescan
 import bluetooth._bluetooth as bluez
+import datetime
 import json
 import threading
 import time
@@ -38,6 +39,16 @@ class Tilt:
         "Red" : 0.0,
         "Yellow" : 0.0
     }
+    LastBeacon = {
+        "Black" : "Never",
+        "Blue" : "Never",
+        "Green": "Never",
+        "Orange" : "Never",
+        "Pink" : "Never",
+        "Purple" : "Never",
+        "Red" : "Never",
+        "Yellow" : "Never"
+    }
     Config = None
     Scanner = None
     Debug = False
@@ -65,6 +76,7 @@ class Tilt:
                     if color != None:
                         self.Temp[color] = (float(parts[2]) - 32) / 1.8
                         self.Grav[color] = float(parts[3]) / 1000
+                        self.LastBeacon[color] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     time.sleep(1)
         except Exception as e:
             print("BleScan: {}".format(e))

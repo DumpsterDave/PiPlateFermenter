@@ -90,6 +90,7 @@ function RefreshElements() {
                 document.getElementById(color + "Name").innerHTML = Values[color]['Name'];
                 document.getElementById(color + "Grav").innerHTML = Values[color]['Grav'];
                 document.getElementById(color + "Temp").innerHTML = Values[color]['Temp'] + TempSymbol;
+                document.getElementById(color + "Beacon").innerHTML = Values[color]['LastBeacon'];
             });
 
             //Process Metrics
@@ -101,7 +102,7 @@ function RefreshElements() {
             document.getElementById("HotAmps").innerHTML = Values['HotAmps'].toFixed(1);
             var UpTimeParts = Values['Uptime'].split(":");
             document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + parseFloat(UpTimeParts[2]).toFixed(2);
-            document.getElementById("LastBeacon").innerHTML = Values['LastBeacon'];
+            document.getElementById("LastLog").innerHTML = Values['LastLog'];
             document.getElementById("CpuTemp").innerHTML = Values['CpuTemp'].toFixed(1) + TempSymbol;
 
             if(Values['LogEnabled'] == true) {
@@ -120,7 +121,24 @@ function ShowBeerName(color) {
     document.getElementById("BeerName").style.visibility = 'visible';
     document.getElementById('BeerNameDisplay').innerHTML = Values[color]["Name"];
     document.getElementById("NewNameColor").value = color;
+    if (Values[color]["Enabled"]) {
+        document.getElementById('TiltEnabled').value = "true";
+        document.getElementById('TiltToggle').src = "img/toggleon.png";
+    } else {
+        document.getElementById('TiltEnabled').value = "false";
+        document.getElementById('TiltToggle').src = "img/toggleoff.png";
+    }
 
+}
+
+function ToggleTilt() {
+    if (document.getElementById('TiltEnabled').value == 'true') {
+        document.getElementById('TiltEnabled').value = 'false';
+        document.getElementById('TiltToggle').src = "img/toggleoff.png";
+    } else {
+        document.getElementById('TiltEnabled').value = 'true';
+        document.getElementById('TiltToggle').src = "img/toggleon.png";
+    }
 }
 
 function HideBeerName() {
@@ -210,14 +228,14 @@ function ShowConfig() {
     document.getElementById('Config').style.visibility = 'visible';
 }
 
-function SetBeerName(color, newName) {
+function SetBeerName(color, newName, enabled) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             HideBeerName();
         }
     };
-    xhttp.open("GET", "setbeername.php?Color=" + color + "&NewName=" + newName, true);
+    xhttp.open("GET", "setbeername.php?Color=" + color + "&NewName=" + newName + "&Enabled=" + enabled, true);
     xhttp.send();
 }
 
@@ -229,7 +247,7 @@ function BeerName(id){
     } else if (id == 'clr') {
         document.getElementById('BeerNameDisplay').innerHTML = '';
     } else if (id == 'ok') {
-        SetBeerName(document.getElementById("NewNameColor").value, document.getElementById('BeerNameDisplay').innerHTML);
+        SetBeerName(document.getElementById("NewNameColor").value, document.getElementById('BeerNameDisplay').innerHTML, document.getElementById('TiltEnabled').value);
     } else if (id == 'esc') {
         HideBeerName();
     } else if (id == 'spc') {

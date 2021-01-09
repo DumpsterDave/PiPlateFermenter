@@ -15,6 +15,9 @@
             https://www.iconfinder.com/iconsets/ionicons
             Gear Icon by Assyifa Art
             https://www.iconfinder.com/iconsets/user-interface-glyph-5
+            Toggle Icon by wishforge.games
+            https://www.iconfinder.com/iconsets/user-interface-584
+
         -->
         <script src="tilt.js"></script>
         <link rel="stylesheet" href="tilt.css">
@@ -32,14 +35,14 @@
                 <span id="PvFooter">&#176;C</span>
             </div>
             <div id="Tilts">
-                <div class="Tilt Black" onClick="ShowBeerName('Black');"><div id="BlackName" class="BeerName"></div><div id="BlackGrav" class="BeerGrav"></div><div id="BlackTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Blue" onClick="ShowBeerName('Blue');"><div id="BlueName" class="BeerName"></div><div id="BlueGrav" class="BeerGrav"></div><div id="BlueTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Green" onClick="ShowBeerName('Green');"><div id="GreenName" class="BeerName"></div><div id="GreenGrav" class="BeerGrav"></div><div id="GreenTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Orange" onClick="ShowBeerName('Orange');"><div id="OrangeName" class="BeerName"></div><div id="OrangeGrav" class="BeerGrav"></div><div id="OrangeTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Pink" onClick="ShowBeerName('Pink');"><div id="PinkName" class="BeerName"></div><div id="PinkGrav" class="BeerGrav"></div><div id="PinkTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Purple" onClick="ShowBeerName('Purple');"><div id="PurpleName" class="BeerName"></div><div id="PurpleGrav" class="BeerGrav"></div><div id="PurpleTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Red" onClick="ShowBeerName('Red');"><div id="RedName" class="BeerName"></div><div id="RedGrav" class="BeerGrav"></div><div id="RedTemp" class="BeerTemp"></div></div>
-                <div class="Tilt Yellow" onClick="ShowBeerName('Yellow');"><div id="YellowName" class="BeerName"></div><div id="YellowGrav" class="BeerGrav"></div><div id="YellowTemp" class="BeerTemp"></div></div>    
+                <div class="Tilt Black" onClick="ShowBeerName('Black');"><div id="BlackName" class="BeerName"></div><div id="BlackGrav" class="BeerGrav"></div><div class="TiltData"><div id="BlackBeacon" class="TiltBeacon"></div><div id="BlackTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Blue" onClick="ShowBeerName('Blue');"><div id="BlueName" class="BeerName"></div><div id="BlueGrav" class="BeerGrav"></div><div class="TiltData"><div id="BlueBeacon" class="TiltBeacon"></div><div id="BlueTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Green" onClick="ShowBeerName('Green');"><div id="GreenName" class="BeerName"></div><div id="GreenGrav" class="BeerGrav"></div><div class="TiltData"><div id="GreenBeacon" class="TiltBeacon"></div><div id="GreenTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Orange" onClick="ShowBeerName('Orange');"><div id="OrangeName" class="BeerName"></div><div id="OrangeGrav" class="BeerGrav"></div><div class="TiltData"><div id="OrangeBeacon" class="TiltBeacon"></div><div id="OrangeTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Pink" onClick="ShowBeerName('Pink');"><div id="PinkName" class="BeerName"></div><div id="PinkGrav" class="BeerGrav"></div><div class="TiltData"><div id="PinkBeacon" class="TiltBeacon"></div><div id="PinkTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Purple" onClick="ShowBeerName('Purple');"><div id="PurpleName" class="BeerName"></div><div id="PurpleGrav" class="BeerGrav"></div><div class="TiltData"><div id="PurpleBeacon" class="TiltBeacon"></div><div id="PurpleTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Red" onClick="ShowBeerName('Red');"><div id="RedName" class="BeerName"></div><div id="RedGrav" class="BeerGrav"></div><div class="TiltData"><div id="RedBeacon" class="TiltBeacon"></div><div id="RedTemp" class="TiltTemp"></div></div></div>
+                <div class="Tilt Yellow" onClick="ShowBeerName('Yellow');"><div id="YellowName" class="BeerName"></div><div id="YellowGrav" class="BeerGrav"></div><div class="TiltData"><div id="YellowBeacon" class="TiltBeacon"></div><div id="YellowTemp" class="TiltTemp"></div></div></div>
             </div>
             <div id="Metrics">
                 <div class="Metric">Main Volts: <span id="MainVolts">125</Span></div>
@@ -48,13 +51,14 @@
                 <div class="MetricButtons" id="MetricButtons"><img src="img/refresh.png" onClick="window.location.reload(true);" style="cursor: pointer;"/><img id="AzureIcon" src="img/la_on.png"/><img src="img/config.png" onClick="ShowConfig();" style="cursor: pointer;"/></div>
                 <div class="Metric">Main Amps: <span id="MainAmps">0</Span></div>
                 <div class="Metric">Hot Amps: <span id="HotAmps">0</Span></div>
-                <div class="Metric">LB: <span id="LastBeacon">0:0:0</Span></div>
+                <div class="Metric">LL: <span id="LastLog">0:0:0</Span></div>
                 <div class="Metric">kWh: <span id="kWh">0</span></div>
                 <div class="Metric">Energy Cost: $<span id="EnCost">0.00</span></div>
                 <div class="Metric">CPU Temp: <span id="CpuTemp">45</Span></div>
             </div>
         </div>
         <div id="BeerName">
+            <div id="BeerToggle"><img id="TiltToggle" src="img/toggleoff.png" onClick="ToggleTilt();"/></div>
             <div id="BeerNameDisplay"></div>
             <div id="BeerNameButtons">
                 <!--Top Row-->
@@ -106,6 +110,7 @@
                 <div class="BeerNameButton Letter" id="m" onclick="BeerName('m');">m</div>
                 <div class="BeerNameButtonDouble" id="spc" onclick="BeerName('spc');">&blank;</div>
                 <input id="NewNameColor" type="hidden" value=""/>
+                <input id="TiltEnabled" type="hidden" value=""/>
             </div>
         </div>
         <div id="SetTargetTemp">
