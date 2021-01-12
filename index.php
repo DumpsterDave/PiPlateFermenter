@@ -1,7 +1,7 @@
 <?php
     try{
         #Perform initial data load
-        $Data = json_decode(file_get_contents('/var/www/html/py/data.json'));
+        $Data = json_decode(file_get_contents('./py/data.json'));
 ?>
 <html>
     <head>
