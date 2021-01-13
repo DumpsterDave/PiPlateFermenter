@@ -176,6 +176,7 @@ try:
   data['HotState'] = 0
   #Zero kWh
   data['kWh'] = 0
+  data['kWhCost'] = Settings['kWhCost']
   #Save the new data
   d = open('/var/www/html/py/data.json', 'w')
   json.dump(data, d)

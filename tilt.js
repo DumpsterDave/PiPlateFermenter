@@ -97,7 +97,7 @@ function RefreshElements() {
             document.getElementById("MainVolts").innerHTML = Values['MainVolts'].toFixed(1);
             document.getElementById("MainAmps").innerHTML = Values['MainAmps'].toFixed(1);
             document.getElementById("kWh").innerHTML = Values['kWh'].toFixed(4);
-            document.getElementById("EnCost").innerHTML = (Values['kWh'] * .09).toFixed(2);
+            document.getElementById("EnCost").innerHTML = (Values['kWh'] * Values['kWhCost']).toFixed(2);
             document.getElementById("ColdAmps").innerHTML = Values['ColdAmps'].toFixed(1);
             document.getElementById("HotAmps").innerHTML = Values['HotAmps'].toFixed(1);
             var UpTimeParts = Values['Uptime'].split(":");
