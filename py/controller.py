@@ -30,10 +30,9 @@ TILT_COLORS = ["Black", "Blue", "Green", "Orange", "Pink", "Purple", "Red", "Yel
 
 VSHIFT = -2.5
 VMULT = 121.6
-  #Amperage correction formula values (aX * Amps^2 - aY * Amps + aZ) when Amps > 0
-AX = 0.2434
-AY = 0.6855
-AZ = 0.4479
+  #Amperage correction formula values y = mx + b
+M = 8.513513
+B = 0
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
 Settings = None
@@ -53,15 +52,15 @@ if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
 
 #Function Declarations
 def GetAmps(channel):
-  global AX, AY, AZ, ADDR, HOT, COLD, MAIN
+  global M, B, ADDR, HOT, COLD, MAIN
   vMax = 0
   Amps = 0
   for x in range(0,120):
-    vMeas = (DAQC.getADC(ADDR,channel) - .044)
+    vMeas = DAQC.getADC(ADDR,channel) - (DAQC.getADC(ADDR, 8) / 2)
     if vMeas > vMax:
       vMax = vMeas
   if vMax != 0:
-    Amps = (AX * (vMax ** 2))- (AY * vMax) + AZ
+    Amps = M * vMax + B
   return round(Amps, 2)
 
 def GetVolts():
