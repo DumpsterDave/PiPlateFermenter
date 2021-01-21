@@ -226,6 +226,7 @@ while RUN:
       data['LogFrequency'] = Settings['LogFrequency']
       data['BeaconFrequency'] = Settings['BeaconFrequency']
       data['CycleFrequency'] = Settings['CycleFrequency']
+      data['kWhCost'] = Settings['kWhCost']
       os.remove('/var/www/html/py/reload')
       if Settings['LogEnabled'] == True:
         nextLog = loop
