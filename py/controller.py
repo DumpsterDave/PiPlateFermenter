@@ -32,7 +32,7 @@ VSHIFT = -2.5
 VMULT = 121.6
   #Amperage correction formula values y = mx + b
 M = 8.513513
-B = 0
+B = 0.0
 TILT_PATTERN = r"^T:\ ([\d\.]*)\ G:\ ([\d\.]*)"
 START_TIME = datetime.datetime.now()
 Settings = None
@@ -56,7 +56,7 @@ def GetAmps(channel):
   vMax = 0
   Amps = 0
   for x in range(0,120):
-    vMeas = DAQC.getADC(ADDR,channel) - (DAQC.getADC(ADDR, 8) / 2)
+    vMeas = DAQC.getADC(ADDR,channel) - (DAQC.getADC(ADDR,8) / 2)
     if vMeas > vMax:
       vMax = vMeas
   if vMax != 0:
