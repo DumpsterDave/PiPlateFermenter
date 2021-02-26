@@ -42,6 +42,11 @@
         if ($Hysteresis < $MIN_HYSTERESIS) {
             $Hysteresis = $MIN_HYSTERESIS;
         }
+        if ($TempUnits == 'f') {
+            $Hysteresis = ($Hysteresis - 32) / 1.8;
+        } elseif ($TempUnits == 'k') {
+            $Hysteresis = $Hysteresis - 273.15;
+        }
         $Conf->{'Hysteresis'} = $Hysteresis;
 
         $CycleFreq = intval($_GET['CycleFreq']) ?? 300;

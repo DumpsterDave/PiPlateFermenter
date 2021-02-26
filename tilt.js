@@ -190,6 +190,8 @@ function ShowConfig() {
 
     if(Values['TempUnits'] == 'f') {
         document.getElementById('NewTempUnits').value = 'f';
+        document.getElementById('Hysteresis').innerHTML = TempToF(Values['Hysteresis']).toFixed(1);
+        document.getElementById('NewHysteresis').value = TempToF(Values['Hysteresis']).toFixed(1);
         document.getElementById('TempUnitsC').classList.remove('ButtonBlue');
         document.getElementById('TempUnitsF').classList.add('ButtonBlue');
         document.getElementById('TempUnitsK').classList.remove('ButtonBlue');
@@ -199,6 +201,8 @@ function ShowConfig() {
         document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
         document.getElementById('TempUnitsK').classList.add('ButtonBlue');
     } else {
+        document.getElementById('Hysteresis').innerHTML = TempToK(Values['Hysteresis']).toFixed(1);
+        document.getElementById('NewHysteresis').value = TempToK(Values['Hysteresis']).toFixed(1);
         document.getElementById('NewTempUnits').value = 'c';
         document.getElementById('TempUnitsC').classList.add('ButtonBlue');
         document.getElementById('TempUnitsF').classList.remove('ButtonBlue');
@@ -226,8 +230,6 @@ function ShowConfig() {
     document.getElementById('NewLogFrequency').value = Values['LogFrequency'];
     document.getElementById('BeaconFrequency').innerHTML = Values['BeaconFrequency'];
     document.getElementById('NewBeaconFrequency').value = Values['BeaconFrequency'];
-    document.getElementById('Hysteresis').innerHTML = Values['Hysteresis'].toFixed(1);
-    document.getElementById('NewHysteresis').value = Values['Hysteresis'].toFixed(1);
     document.getElementById('NewCycleFrequency').value = Values['CycleFrequency'];
     document.getElementById('CycleFrequency').innerHTML = Values['CycleFrequency'];
     document.getElementById('Config').style.visibility = 'visible';
