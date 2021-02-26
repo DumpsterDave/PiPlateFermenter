@@ -56,7 +56,7 @@ class Tilt:
 
     def __init__(self, Debug=False):
         #Load Settings
-        f = open('tilt.json')
+        f = open('/var/www/html/py/tilt.json')
         self.Config = json.load(f)
         f.close()
         self.Debug = Debug
