@@ -3,7 +3,7 @@
         $NewTargetTemp = floatval($_GET['setpoint']) ?? 20.0;
         if (isset($_GET['scale'])) {
             if ($_GET['scale'] == 'f') {
-                $NewTargetTemp = (($NewTargetTemp - 32) / 1.8);
+                $NewTargetTemp = ($NewTargetTemp - 32) / 1.8;
             } elseif ($_GET['scale'] == 'k') {
                 $NewTargetTemp -= 273.15;
             }

@@ -1,13 +1,13 @@
-import piplates.DAQCplate as DAQC
 import base64
 import datetime
+from gpiozero import CPUTemperature
 import hashlib
 import hmac
 import inspect
-from gpiozero import CPUTemperature
 import json
 import math
 import os
+import piplates.DAQCplate as DAQC
 import re
 import requests
 import sys

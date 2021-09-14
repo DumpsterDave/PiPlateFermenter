@@ -2,3 +2,4 @@ py/conf.json
 py/TiltHydrometer.py
 py/blescan.py
 tiltHydrometer/
+python_errors.log
