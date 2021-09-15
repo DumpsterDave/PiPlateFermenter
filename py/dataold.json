@@ -14,7 +14,7 @@
         "Enabled": false
     },
     "Green": {
-        "Name": "Azure",
+        "Name": "Saison",
         "Temp": 0,
         "Grav": 0.0817419354838711,
         "LastBeacon": "Never",
@@ -57,7 +57,7 @@
     },
     "MainVolts": 118.68159999999999,
     "MainAmps": 0.27,
-    "kWh": 0,
+    "kWh": 0.012582853829375977,
     "HotAmps": 0.07,
     "HotState": 0,
     "ColdAmps": 0.03,

@@ -3,6 +3,7 @@
         if (isset($_GET['action'])) {
             $Action = $_GET['action'];
             if ($Action == 'off') {
+                
                 $out = shell_exec('sudo shutdown -h now');
             } elseif ($Action == 'reset') {
                 $out = shell_exec('sudo shutdown -r now');

@@ -4,6 +4,7 @@ from gpiozero import CPUTemperature
 import hashlib
 import hmac
 import inspect
+import iot
 import json
 import math
 import os
@@ -16,6 +17,7 @@ import tilt
 import time
 
 #Global Variables
+IOT = iot.IoT()
 RUN = True
 ADDR = 0  #DAQC Plate Address
 HOT = 0  #Hot Channel (DOUT/AIN)
@@ -128,6 +130,8 @@ signal.signal(signal.SIGTERM, OnKill)
 
 #Initial Load
 try:
+  #Setup IoT
+  IOT.Start()
   #Settings
   f = open("/var/www/html/py/conf.json")
   Settings = json.load(f)
@@ -198,9 +202,16 @@ while RUN:
   #Refresh Data/Settings
   try:
     CurrTime = datetime.datetime.now()
-    d = open('/var/www/html/py/data.json')
-    data = json.load(d)
-    d.close()
+    if os.path.exists('/var/www/html/py/newdata.json'):
+      d = open('/var/www/html/py/newdata.json')
+      data = json.load(d)
+      d.close()
+      os.remove('/var/www/html/py/newdata.json')
+    else:
+      d = open('/var/www/html/py/data.json')
+      data = json.load(d)
+      d.close()
+
     Uptime = CurrTime - START_TIME
     data['Uptime'] = str(Uptime)
 
@@ -342,6 +353,14 @@ while RUN:
   if loopTime < 1000:
     time.sleep((1000 - loopTime) * .001)
 
+  try:
+    if os.path.exists('/var/www/html/py/STOP'):
+      RUN = False
+      os.remove('/var/www/html/py/STOP')
+  except Exception as e:
+    WriteLog(e)
+
 tilt.Stop()
+IOT.Stop()
 DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
 DAQC.clrDOUTbit(ADDR, COLD) #Cold Off
