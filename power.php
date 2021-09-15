@@ -7,6 +7,8 @@
                 sleep(2);
                 $out = shell_exec('sudo shutdown -h now');
             } elseif ($Action == 'reset') {
+                file_put_contents('/var/www/html/py/STOP', 'STOP');
+                sleep(2);
                 $out = shell_exec('sudo shutdown -r now');
             }
         }
