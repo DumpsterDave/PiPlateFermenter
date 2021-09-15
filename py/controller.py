@@ -202,15 +202,9 @@ while RUN:
   #Refresh Data/Settings
   try:
     CurrTime = datetime.datetime.now()
-    if os.path.exists('/var/www/html/py/newdata.json'):
-      d = open('/var/www/html/py/newdata.json')
-      data = json.load(d)
-      d.close()
-      os.remove('/var/www/html/py/newdata.json')
-    else:
-      d = open('/var/www/html/py/data.json')
-      data = json.load(d)
-      d.close()
+    d = open('/var/www/html/py/data.json')
+    data = json.load(d)
+    d.close()
 
     Uptime = CurrTime - START_TIME
     data['Uptime'] = str(Uptime)

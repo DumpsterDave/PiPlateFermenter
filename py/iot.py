@@ -7,7 +7,6 @@ class IoT:
     Config = None
     Client = None
     Data = None
-    RData = None
     DoSend = False
     DoReceive = False
     
@@ -27,19 +26,14 @@ class IoT:
     def ReceiveData(self, message):
         
         if self.DoReceive:
-            f = open('/var/www/html/py/data.json')
-            self.RData = json.load(f)
-            f.close()
             props = message.custom_properties
             for key in props.keys():
-                if key.count('.') > 0:
-                    keyparts = key.split('.')
-                    self.RData[keyparts[0]][keyparts[1]] = props.get(key)
-                else:
-                    self.RData[key] = props.get(key)
-            d = open('/var/www/html/py/newdata.json', 'w')
-            json.dump(self.RData, d)
+                self.Config[key] = props.get(key)
+            d = open('/var/www/html/py/conf.json', 'w')
+            json.dump(self.Config, d)
             d.close()
+            r = open('/var/www/html/py/reload', 'w')
+            r.close()
             
 
     def __init__(self):
