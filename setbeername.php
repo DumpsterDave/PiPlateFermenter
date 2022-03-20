@@ -1,18 +1,18 @@
 <?php
     try {
-        if (isset($_GET['Color']) && isset($_GET['NewName'])) {
-            $Enabled = true;
-            if (strtolower($_GET['Enabled']) == 'false') {
-                $Enabled = false;
-            }
+        if (isset($_GET['NewName'])) {
             $Config = json_decode(file_get_contents("./py/conf.json"));
-            $Config->{$_GET['Color']} = $_GET['NewName'];
-            $IsEnabled = array_search($_GET['Color'], $Config->{"EnabledTilts"});
-            if (($IsEnabled != false) && ($Enabled == false)) {
-                array_splice($Config->{"EnabledTilts"}, $IsEnabled, 1);
-            } elseif (($IsEnabled == false) && ($Enabled == true)) {
-                $Config->{"EnabledTilts"}[] = $_GET['Color'];
+            $Config->{'BeerName'} = $_GET['NewName'];
+            $Enabled = $Config->{'BeaconEnabled'};
+            if (isset($_GET['Enabled'])) {
+                if (strtolower($_GET['Enabled']) == 'false') {
+                    $Enabled = false;
+                }
+                if (strtolower($_GET['Enabled']) == 'true') {
+                    $Enabled = true;
+                }
             }
+            $Config->{'BeaconEnabled'} = $Enabled;
             file_put_contents('./py/conf.json', json_encode($Config));
             file_put_contents('./py/reload', 'true');
         } else {

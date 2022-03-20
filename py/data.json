@@ -1,76 +1,25 @@
 {
-    "Black": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Blue": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Green": {
-        "Name": "Azure",
-        "Temp": 0,
-        "Grav": 0.0817419354838711,
-        "LastBeacon": "Never",
-        "Enabled": true
-    },
-    "Orange": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Pink": {
-        "Name": "Disabled",
-        "Temp": 6.111111111111111,
-        "Grav": 1.0127837837837836,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Purple": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Red": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "Yellow": {
-        "Name": "Disabled",
-        "Temp": 0,
-        "Grav": 1,
-        "LastBeacon": "Never",
-        "Enabled": false
-    },
-    "MainVolts": 118.68159999999999,
-    "MainAmps": 0.27,
+    "TiltName": "Unnamed",
+    "TiltColor": "Green",
+    "TiltTemp": 0,
+    "TiltGrav": 1,
+    "LastBeacon": "Never",
+    "MainVolts": 116.68320000000001,
+    "MainAmps": 0,
     "kWh": 0,
-    "HotAmps": 0.07,
-    "HotState": 0,
-    "ColdAmps": 0.03,
-    "ColdState": 1,
-    "CpuTemp": 55.844,
-    "ProbeTemp": 24.3125,
-    "TargetTemp": 1.1111111111111112,
+    "HotAmps": 0,
+    "HotState": 1,
+    "ColdAmps": 0,
+    "ColdState": 0,
+    "CpuTemp": 57.996,
+    "ProbeTemp": 19.43202781677246,
+    "TargetTemp": 32.22222222222222,
     "Hysteresis": 0.2777777777777778,
     "TempUnits": "f",
     "GravUnits": "brix",
-    "Uptime": "8 days, 2:58:31.154554",
+    "Uptime": "1:00:02.001538",
     "LastLog": "2021-09-06 09:51:11",
-    "SinceLastCycle": 1159,
+    "SinceLastCycle": 3292,
     "LogEnabled": false,
     "LogFrequency": 300,
     "BeaconFrequency": 15,

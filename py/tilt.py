@@ -74,8 +74,8 @@ class Tilt:
                     parts = beacon.split(",")
                     color = self.UUIDS.get(parts[1])
                     if color != None:
-                        self.Temp[color] = (float(parts[2]) - 32) / 1.8
-                        self.Grav[color] = float(parts[3]) / 1000
+                        self.Temp[color] = ((float(parts[2]) / 10) - 32) / 1.8
+                        self.Grav[color] = float(parts[3]) / 10000
                         self.LastBeacon[color] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     time.sleep(1)
         except Exception as e:

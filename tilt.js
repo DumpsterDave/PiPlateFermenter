@@ -23,12 +23,14 @@ function ConvertUnits(Values) {
     //Temperature Unit Adjustments
     if (Values['TempUnits'] == "f") {
         TempSymbol = "&#176;F";
+        Values['HSTemp'] = TempToF(Values['HSTemp']);
         Values['CpuTemp'] = TempToF(Values['CpuTemp']);
         Values['ProbeTemp'] = TempToF(Values['ProbeTemp']);
         Values['TargetTemp'] = TempToF(Values['TargetTemp']);
         Values['Hysteresis'] = Values['Hysteresis'] * 1.8;
     } else if (Values['TempUnits'] == "k") {
         TempSymbol = "&#176;K";
+        Values['HSTemp'] = TempToK(Values['HSTemp']);
         Values['CpuTemp'] = TempToK(Values['CpuTemp']);
         Values['ProbeTemp'] = TempToK(Values['ProbeTemp']);
         Values['TargetTemp'] = TempToK(Values['TargetTemp']);
@@ -41,25 +43,21 @@ function ConvertUnits(Values) {
     
 
     //Tilt Unit Adjustments
-    TiltColors.forEach(color=>{
-        if (Values['GravUnits'] == 'sg') {
-            Values[color]['Grav'] = Values[color]['Grav'].toFixed(3);
-        } else if (Values['GravUnits'] == 'b') {
-            Values[color]['Grav'] = SgToBrix(Values[color]['Grav']);
-        } else {
-            Values[color]['Grav'] = SgToPlato(Values[color]['Grav']);
-        }
+    if (Values['GravUnits'] == 'sg') {
+        Values['TiltGrav'] = Values['TiltGrav'].toFixed(4);
+    } else if (Values['GravUnits'] == 'brix') {
+        Values['TiltGrav'] = SgToBrix(Values['TiltGrav']);
+    } else {
+        Values['TiltGrav'] = SgToPlato(Values['TiltGrav']);
+    }
 
-        if(Values['TempUnits'] == 'f') {
-            Values[color]['Temp'] = TempToF(Values[color]['Temp']).toFixed(1);
-        } else if (Values['TempUnits'] == 'k') {
-            Values[color]['Temp'] = TempToK(Values[color]['Temp']).toFixed(1);
-        } else {
-            Values[color]['Temp'] = Values[color]['Temp'].toFixed(1);
-        }
-    });
-
-    
+    if (Values['TempUnits' == 'f']) {
+        Values['TiltTemp'] = TempToF(Values['TiltTemp']).toFixed(1);
+    } else if (Values['TempUnits'] == 'k') {
+        Values['TiltTemp'] = TempToK(Values['TiltTemp']).toFixed(1);
+    } else {
+        Values['TiltTemp'] = Values['TiltTemp'].toFixed(1);
+    }
 }
 
 function InitializeTimers() {
@@ -87,18 +85,22 @@ function RefreshElements() {
             }
 
             //Process Tilts
-            TiltColors.forEach(color=>{
-                document.getElementById(color + "Name").innerHTML = Values[color]['Name'];
-                document.getElementById(color + "Grav").innerHTML = Values[color]['Grav'];
-                document.getElementById(color + "Temp").innerHTML = Values[color]['Temp'] + TempSymbol;
-                document.getElementById(color + "Beacon").innerHTML = Values[color]['LastBeacon'];
-            });
+            //document.getElementById("BeerNameDisplay").innerHTML = Values['TiltName'];
+            document.getElementById("GvText").innerHTML = Values['TiltGrav'];
+            if (Values['GravUnits'] == 'sg') {
+                document.getElementById("GvFooter").innerHTML = "SG";
+            } else if (Values['GravUnits'] == 'brix') {
+                document.getElementById("GvFooter").innerHTML = "%Brix";
+            } else {
+                document.getElementById("GvFooter").innerHTML = "&#176;Plato";
+            }
+            document.getElementById("LastBt").innerHTML = Values['LastBeacon'];
 
             //Process Metrics
             document.getElementById("MainVolts").innerHTML = Values['MainVolts'].toFixed(2);
             document.getElementById("MainAmps").innerHTML = Values['MainAmps'].toFixed(2);
             document.getElementById("kWh").innerHTML = Values['kWh'].toFixed(4);
-            document.getElementById("EnCost").innerHTML = (Values['kWh'] * Values['kWhCost']).toFixed(2);
+            document.getElementById("EnCost").innerHTML = "$" + (Values['kWh'] * Values['kWhCost']).toFixed(2);
             document.getElementById("ColdAmps").innerHTML = Values['ColdAmps'].toFixed(2);
             document.getElementById("HotAmps").innerHTML = Values['HotAmps'].toFixed(2);
             var UpTimeParts = Values['Uptime'].split(":");
@@ -107,14 +109,21 @@ function RefreshElements() {
             if (Sec < 10) {
                 SecString = "0" + Sec;
             }
-            document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + SecString + " (" + parseInt(Values['SinceLastCycle']) + ")";
+            document.getElementById("SLC").innerHTML = parseInt(Values['SinceLastCycle']);
+            document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + SecString;
             document.getElementById("LastLog").innerHTML = Values['LastLog'];
             document.getElementById("CpuTemp").innerHTML = Values['CpuTemp'].toFixed(1) + TempSymbol;
+            document.getElementById("HeatsinkTemp").innerHTML = Values['HSTemp'].toFixed(1) + TempSymbol;
 
-            if(Values['LogEnabled'] == true) {
-                document.getElementById("AzureIcon").src = 'img/la_on.png';
+            if(Values['IoTSending'] == true) {
+                document.getElementById("AzureStatus").src = 'img/iot_on.png';
             } else {
-                document.getElementById("AzureIcon").src = 'img/la_off.png';
+                document.getElementById("AzureStatus").src = 'img/iot_off.png';
+            }
+            if(Values['TotalErrors'] > 0) {
+                document.getElementById("ErrorIndicator").src = 'img/error_yes.png';
+            } else {
+                document.getElementById("ErrorIndicator").src = 'img/error_no.png';
             }
         }
     };
@@ -123,18 +132,16 @@ function RefreshElements() {
     xhttp.send();
 }
 
-function ShowBeerName(color) {
+function ShowBeerName() {
     document.getElementById("BeerName").style.visibility = 'visible';
-    document.getElementById('BeerNameDisplay').innerHTML = Values[color]["Name"];
-    document.getElementById("NewNameColor").value = color;
-    if (Values[color]["Enabled"]) {
-        document.getElementById('TiltEnabled').value = "true";
+    document.getElementById('BeerNameDisplay').innerHTML = Values["TiltName"];
+    if (Values['TiltEnabled'] == true) {
+        document.getElementById('TiltEnabled').value == 'true';
         document.getElementById('TiltToggle').src = "img/toggleon.png";
     } else {
-        document.getElementById('TiltEnabled').value = "false";
+        document.getElementById('TiltEnabled').value = 'false';
         document.getElementById('TiltToggle').src = "img/toggleoff.png";
     }
-
 }
 
 function ToggleTilt() {
@@ -180,12 +187,12 @@ function HideConfig() {
 function ShowConfig() {
     if (Values['LogEnabled']) {
         document.getElementById('NewLogEnabled').value = 'true';
-        document.getElementById('LogEnabled').innerHTML = 'Enabled';
+        document.getElementById('LogEnabled').innerHTML = 'On';
         document.getElementById('LogEnabled').classList.add('ButtonBlue');
 
     } else {
         document.getElementById('NewLogEnabled').value = 'false';
-        document.getElementById('LogEnabled').innerHTML = 'Disabled';
+        document.getElementById('LogEnabled').innerHTML = 'Off';
         document.getElementById('LogEnabled').classList.remove('ButtonBlue');
     }
 
@@ -234,14 +241,45 @@ function ShowConfig() {
     document.getElementById('Config').style.visibility = 'visible';
 }
 
-function SetBeerName(color, newName, enabled) {
+function ShowLogs() {
+    document.getElementById('LogEntries').style.visibility = 'visible';
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+             logEntries = JSON.parse(this.responseText);
+             document.getElementById('ControllerLogEntries').innerHTML = logEntries['Controller'];
+             document.getElementById('IoTLogEntries').innerHTML = logEntries['IoT'];
+        }
+    };
+    xhttp.open("GET", "getlogs.php", true);
+    xhttp.send();
+}
+
+function HideLogs() {
+    document.getElementById('LogEntries').style.visibility = 'hidden';
+}
+
+function LogAction(action) {
+    if (action == 'clear' || action == 'reset') {
+        var xhttp = new XMLHttpRequest();
+        if (this.readyState == 4 && this.status == 200) {
+            
+       }
+        xhttp.open("GET", "getlogs.php?action=" + action, true);
+        xhttp.send();
+        document.getElementById('LogEntries').style.visibility = 'hidden';
+    }
+}
+
+function SetBeerName(newName, enabled) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             HideBeerName();
         }
     };
-    xhttp.open("GET", "setbeername.php?Color=" + color + "&NewName=" + newName + "&Enabled=" + enabled, true);
+    xhttp.open("GET", "setbeername.php?NewName=" + newName + "&Enabled=" + enabled, true);
     xhttp.send();
 }
 
@@ -253,7 +291,7 @@ function BeerName(id){
     } else if (id == 'clr') {
         document.getElementById('BeerNameDisplay').innerHTML = '';
     } else if (id == 'ok') {
-        SetBeerName(document.getElementById("NewNameColor").value, document.getElementById('BeerNameDisplay').innerHTML, document.getElementById('TiltEnabled').value);
+        SetBeerName(document.getElementById('BeerNameDisplay').innerHTML, document.getElementById('TiltEnabled').value);
     } else if (id == 'esc') {
         HideBeerName();
     } else if (id == 'spc') {
@@ -422,11 +460,11 @@ function TargetTemp(id) {
 function ToggleLogs(){
     if (document.getElementById('NewLogEnabled').value == 'true') {
         document.getElementById('NewLogEnabled').value = 'false';
-        document.getElementById('LogEnabled').innerHTML = 'Disabled';
+        document.getElementById('LogEnabled').innerHTML = 'Off';
         document.getElementById('LogEnabled').classList.remove('ButtonBlue');
     } else {
         document.getElementById('NewLogEnabled').value = 'true';
-        document.getElementById('LogEnabled').innerHTML = 'Enabled';
+        document.getElementById('LogEnabled').innerHTML = 'On';
         document.getElementById('LogEnabled').classList.add('ButtonBlue');
     }
 }

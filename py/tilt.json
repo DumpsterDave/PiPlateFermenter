@@ -27,7 +27,7 @@
     "Green":{
         "Name": "Disabled",
         "Uuid": "a495bb20c5b14b44b5121370f02d74de",
-        "GravLow": 0.993,
+        "GravLow": 1.000,
         "GravLowRef": 1.000,
         "GravHigh": 1.086,
         "GravHighRef": 1.086,

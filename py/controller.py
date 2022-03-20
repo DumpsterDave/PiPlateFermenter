@@ -8,7 +8,8 @@ import iot
 import json
 import math
 import os
-import piplates.DAQCplate as DAQC
+import megaind
+import librtd
 import re
 import requests
 import sys
@@ -19,19 +20,24 @@ import time
 #Global Variables
 IOT = iot.IoT()
 RUN = True
-ADDR = 0  #DAQC Plate Address
-HOT = 0  #Hot Channel (DOUT/AIN)
-COLD = 1 #Cold Channel (DOUT/AIN)
-MAIN = 2 #Main Channel (AIN)
-VOLT = 3 #Voltage (AIN)
-TEMP = 0 #DS18B20 (DIN)
+RTDADDR = 0
+INDADDR = 1
+VOLT = 1
+MAIN = 2
+ERR = 4
+HOT = 3
+COLD = 2
+TEMP = 1
+HS = 8
 BEACON_MIN = 10 #minimum amount of time between beacon cycles
 LOG_MIN = 10 #minimum amount of time between Log Entries
 CYCLE_MIN = 10 #minimum number of seconds between hot/cold cycles
 TILT_COLORS = ["Black", "Blue", "Green", "Orange", "Pink", "Purple", "Red", "Yellow"]
+VDIV = 2.5
+VMUL = 111
+ERRCOUNT = 0
+TOTERRORS = 0
 
-VSHIFT = -2.5
-VMULT = 121.6
   #Amperage correction formula values y = mx + b
 M = 8.513513
 B = 0.0
@@ -44,9 +50,12 @@ CurrTime = None
 #Initialize Tilt
 tilt = tilt.Tilt()
 tilt.Start()
-#tilt = TiltHydrometer.TiltHydrometerManager(False, 60, 40)
-#tilt.loadSettings()
-#tilt.start()
+
+#Power on sensors
+megaind.set0_10Out(INDADDR, VOLT, 5)
+
+#Rest Error Indicator
+megaind.setOdPWM(INDADDR, ERR, 0)
 
 Debug = False
 if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
@@ -54,6 +63,7 @@ if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
 
 #Function Declarations
 def GetAmps(channel):
+  return 0
   global M, B, ADDR, HOT, COLD, MAIN
   vMax = 0
   Amps = 0
@@ -67,20 +77,20 @@ def GetAmps(channel):
 
 def GetVolts():
   vMax = 0
-  global VSHIFT, VMULT, ADDR, VOLT
+  global VDIV, VMUL, INDADDR, VOLT
 
   for x in range(0,120):
-    vMeas = DAQC.getADC(ADDR, VOLT)
+    vMeas = megaind.get0_10In(INDADDR, VOLT)
     if vMeas > vMax:
       vMax = vMeas
 
-  return ((vMax + VSHIFT) * VMULT)
+  return vMax / VDIV * VMUL
 
 def OnKill(signum, frame):
-  global RUN, ADDR, HOT, COLD
+  global RUN, INDADDR, HOT, COLD
   RUN = False
-  DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
-  DAQC.clrDOUTbit(ADDR, COLD) #Cold Off
+  megaind.setOdPWM(INDADDR, HOT, 0) #Hot Off
+  megaind.setOdPWM(INDADDR, COLD, 0) #Cold Off
   now = datetime.datetime.now()
   f = open('/var/www/html/python_errors.log', 'a')
   f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))
@@ -160,13 +170,9 @@ try:
   #Copy some settings to the data structure
   data['TargetTemp'] = Settings['TargetTemp']
   data['Hysteresis'] = Settings['Hysteresis']
-  for color in TILT_COLORS:
-    data[color]['Name'] = "Disabled"
-    data[color]['LastBeacon'] = "Never"
-    data[color]['Enabled'] = False
-  for color in Settings['EnabledTilts']:
-    data[color]['Name'] = Settings[color]
-    data[color]['Enabled'] = True
+  data['TiltName'] = Settings['BeerName']
+  data['TiltColor'] = Settings['TiltColor']
+  data['TiltEnabled'] = Settings['BeaconEnabled']
   data['TempUnits'] = Settings['TempUnits']
   data['GravUnits'] = Settings['GravUnits']
   data['LogEnabled'] = Settings['LogEnabled']
@@ -183,6 +189,7 @@ try:
   json.dump(data, d)
   d.close()
 except Exception as e:
+  ERRCOUNT += 1
   WriteLog(e)
 
 #Initialize loop counter
@@ -200,7 +207,13 @@ nextCycle = loop + Settings['CycleFrequency']
 
 while RUN:
   #Refresh Data/Settings
+  TOTERRORS = ERRCOUNT + IOT.ErrorCount
   try:
+    if TOTERRORS > 0:
+      megaind.setOdPWM(INDADDR, ERR, 100)
+    else:
+      megaind.setOdPWM(INDADDR, ERR, 0)
+
     CurrTime = datetime.datetime.now()
     d = open('/var/www/html/py/data.json')
     data = json.load(d)
@@ -217,12 +230,9 @@ while RUN:
       #Copy some settings to the data structure
       data['TargetTemp'] = Settings['TargetTemp']
       data['Hysteresis'] = Settings['Hysteresis']
-      for color in TILT_COLORS:
-        data[color]['Name'] = "Disabled"
-        data[color]['Enabled'] = False
-      for color in Settings['EnabledTilts']:
-        data[color]['Name'] = Settings[color]
-        data[color]['Enabled'] = True
+      data['TiltName'] = Settings['BeerName']
+      data['TiltColor'] = Settings['TiltColor']
+      data['TiltEnabled'] = Settings['BeaconEnabled']
       data['TempUnits'] = Settings['TempUnits']
       data['GravUnits'] = Settings['GravUnits']
       data['LogEnabled'] = Settings['LogEnabled']
@@ -243,23 +253,33 @@ while RUN:
     data['HotAmps'] = GetAmps(HOT)
     data['ColdAmps'] = GetAmps(COLD)
     data['MainVolts'] = GetVolts()
-    if ((loop % 10) == 0):
-      data['ProbeTemp'] = DAQC.getTEMP(ADDR, TEMP, 'c')
+    #if ((loop % 10) == 0):
+    data['ProbeTemp'] = librtd.get(RTDADDR, TEMP)
     data['CpuTemp'] = CPUTemperature().temperature
+    data['HSTemp'] = librtd.get(RTDADDR, HS)
     kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
     data['kWh'] += kWh
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
+
+  if IOT.DoSend == True:
+    data['IoTSending'] = True
+  else:
+    data['IoTSending'] = False
   
   #Process Beacons
   try:
     if (loop == nextBeacon) and (Settings['BeaconEnabled']):
-      for color in Settings['EnabledTilts']:
-        data[color]['Temp'] = tilt.GetCalTemp(color)
-        data[color]['Grav'] = tilt.GetCalGrav(color)
-        data[color]['LastBeacon'] = tilt.LastBeacon[color]
+      color = data['TiltColor']
+      data['TiltTemp'] = tilt.GetCalTemp(color)
+      data['TiltGrav'] = tilt.GetCalGrav(color)
+      #data['TiltTemp'] = tilt.GetTemp(color)
+      #data['TiltGrav'] = tilt.GetGrav(color)
+      data['LastBeacon'] = tilt.LastBeacon[color]
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
   finally:
     if loop == nextBeacon:
       nextBeacon += Settings['BeaconFrequency']
@@ -270,75 +290,83 @@ while RUN:
       if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])): #Too Cold, turn on heat
         if data['HotState'] == 0:
           sinceLastCycle = 0 #Heat is off and will be toggled, reset sinceLastCycle to 0
-          DAQC.clrDOUTbit(ADDR, COLD)
-          DAQC.setDOUTbit(ADDR, HOT)
+          megaind.setOdPWM(INDADDR, COLD, 0)
+          megaind.setOdPWM(INDADDR, HOT, 100)
           data['HotState'] = 1
           data['ColdState'] = 0
       elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])): #Too Hot, turn on cold
         if data['ColdState'] == 0:
           sinceLastCycle = 0 #Cold is off and will be toggled, reset sinceLastCycle to 0
-          DAQC.clrDOUTbit(ADDR, HOT)
-          DAQC.setDOUTbit(ADDR, COLD)
+          megaind.setOdPWM(INDADDR, COLD, 100)
+          megaind.setOdPWM(INDADDR, HOT, 0)
           data['HotState'] = 0
           data['ColdState'] = 1
       else:
         if (data['ColdState'] == 1) or (data['HotState'] == 1):
           sinceLastCycle = 0 #Cold or hot is on and we are now in the Hysteresis band.  Shut them off
-          DAQC.clrDOUTbit(ADDR, HOT)
-          DAQC.clrDOUTbit(ADDR, COLD)
+          megaind.setOdPWM(INDADDR, COLD, 0)
+          megaind.setOdPWM(INDADDR, HOT, 0)
           data['HotState'] = 0
           data['ColdState'] = 0
 
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
 
   
   #Send Data to Log Analytics
   try:
     if loop == nextLog:
-      for color in Settings['EnabledTilts']:
-        if Debug:
-          print("Logging %s to Azure:\r" % (color))
-        payload = """{
-          "BeerName": "%s",
-          "ColdAmps": %f,
-          "ColdState": %i,
-          "Color": "%s",
-          "ProbeTemp": %f,
-          "HotAmps": %f,
-          "HotState": %i,
-          "MainAmps": %f,
-          "Hysteresis": %f,
-          "TargetTemp": %f,
-          "SG": %f,
-          "TiltTemp": %f,
-          "Voltage": %f,
-          "CpuTemp": %f,
-          "Uptime": "%s",
-          "LastBeacon": "%s",
-          "TotalkWh": %f
-        }""" % (Settings[color], data['ColdAmps'], data['ColdState'], color, data['ProbeTemp'], data['HotAmps'], data['HotState'], data['MainAmps'], Settings['Hysteresis'], Settings['TargetTemp'], data[color]['Grav'], data[color]['Temp'], data['MainVolts'], data['CpuTemp'], data['Uptime'], data[color]['LastBeacon'], data['kWh'])
-        
-        result = post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
-        if Debug:
-          print("Logging %s to Azure: %i\r" % (color, result.status_code))
-        if result.status_code != 200:
-          WriteLog("Logging {} to Azure failed: {}".format(color, result.status_code))
-        else:
-          data['LastLog'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      if Debug:
+        print("Logging %s to Azure:\r" % (color))
+      payload = json.dumps(data)
+      result = post_data(Settings['WorkspaceId'], Settings['WorkspaceKey'], payload, Settings['LogName'])
+      if Debug:
+        print("Logging %s to Azure: %i\r" % (color, result.status_code))
+      if result.status_code != 200:
+        WriteLog("Logging {} to Azure failed: {}".format(color, result.status_code))
+      else:
+        data['LastLog'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
   finally:
     if loop == nextLog:
       nextLog += Settings['LogFrequency']
   
+  #Reset Errors if instructed to
+  try:
+    if os.path.exists('/var/www/html/py/clear_logs'):
+      ERRCOUNT = 0
+      IOT.ErrorCount = 0
+      TOTERRORS = 0
+      if os.path.exists('/var/www/html/python_errors.log'):
+        os.remove('/var/www/html/python_errors.log')
+      if os.path.exists('/var/www/html/iot.log'):
+        os.remove('/var/www/html/iot.log')
+      os.remove('/var/www/html/py/clear_logs')
+    if os.path.exists('/var/www/html/py/reset_error_counts'):
+      ERRCOUNT = 0
+      IOT.ErrorCount = 0
+      TOTERRORS = 0
+      os.remove('/var/www/html/py/reset_error_counts')
+  except Exception as e:
+    WriteLog(e)
+    ERRCOUNT += 1
 
+  #Set Error Counts
+  data['ControllerErrors'] = ERRCOUNT
+  data['IoTErrors'] = IOT.ErrorCount
+  data['TotalErrors'] = TOTERRORS
+
+  #Write Data
   try:
     d = open('/var/www/html/py/data.json', 'w')
     json.dump(data, d)
     d.close()
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
   finally:
     loop += 1
     sinceLastCycle += 1
@@ -353,8 +381,10 @@ while RUN:
       os.remove('/var/www/html/py/STOP')
   except Exception as e:
     WriteLog(e)
+    ERRCOUNT += 1
 
 tilt.Stop()
 IOT.Stop()
-DAQC.clrDOUTbit(ADDR, HOT) #Hot Off
-DAQC.clrDOUTbit(ADDR, COLD) #Cold Off
+megaind.setOdPWM(INDADDR, COLD, 0)
+megaind.setOdPWM(INDADDR, HOT, 0)
+megaind.set0_10Out(INDADDR, VOLT, 0)

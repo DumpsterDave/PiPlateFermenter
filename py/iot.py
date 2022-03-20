@@ -1,7 +1,9 @@
 from azure.iot.device import IoTHubDeviceClient
+from datetime import datetime
 import json
 import threading
 import time
+
 
 class IoT:
     Config = None
@@ -9,32 +11,41 @@ class IoT:
     Data = None
     DoSend = False
     DoReceive = False
+    ErrorCount = 0
     
     Sender = None
 
     def SendData(self):
-        try:
-            while self.DoSend:
+        while self.DoSend:
+            try:
                 f = open('/var/www/html/py/data.json')
                 self.Data = json.load(f)
                 f.close()
                 self.Client.send_message(json.dumps(self.Data))
+            except Exception as e:
+                f = open('/var/www/html/iot.log', 'a')
+                f.write("IoT[{}]: {} {}\n".format(24,datetime.now().isoformat(timespec='seconds'),e))
+                f.close()
+                self.ErrorCount += 1
+            finally:
                 time.sleep(self.Config['LogFrequency'])
-        except Exception as e:
-            print("IoT: {}".format(e))
     
     def ReceiveData(self, message):
-        
         if self.DoReceive:
-            props = message.custom_properties
-            for key in props.keys():
-                self.Config[key] = props.get(key)
-            d = open('/var/www/html/py/conf.json', 'w')
-            json.dump(self.Config, d)
-            d.close()
-            r = open('/var/www/html/py/reload', 'w')
-            r.close()
-            
+            try:
+                props = message.custom_properties
+                for key in props.keys():
+                    self.Config[key] = props.get(key)
+                d = open('/var/www/html/py/conf.json', 'w')
+                json.dump(self.Config, d)
+                d.close()
+                r = open('/var/www/html/py/reload', 'w')
+                r.close()
+            except Exception as e:
+                f = open('/var/www/html/iot.log', 'a')
+                f.write("IoT[{}]: {} {}\n".format(24,datetime.now().isoformat(timespec='seconds'),e))
+                f.close()
+                self.ErrorCount += 1
 
     def __init__(self):
         f = open('/var/www/html/py/conf.json')

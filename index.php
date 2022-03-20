@@ -6,7 +6,12 @@
 <html>
     <head>
         <!--
-            All code and artwork (C) 2020 Scott Corio except:
+            All code and artwork (C) 2022 Scott Corio except:
+            Ionicons Fill Vol.2 icon Pack
+            https://www.iconfinder.com/iconsets/ionicons-fill-vol-2
+            Pump Icon
+            http://www.onlinewebfonts.com/icon/97990
+
             Restart Icon by Frank Souza
             https://www.iconfinder.com/iconsets/fs-icons-ubuntu-by-franksouza-
             Power Icon by Artyom Khamitov
@@ -26,35 +31,42 @@
         <div id="Main">
             <div id="Sv">
                 <span id="SvHeader">Sv</span>
-                <span id="SvText" onClick="ShowTargetTemp();"></span>
+                <span id="SvText" onClick="ShowTargetTemp();">90.0</span>
                 <span id="SvFooter">&#176;C</span>
             </div>
             <div id="Pv">
                 <span id="PvHeader">Pv</span>
-                <span id="PvText" class="TempOk"></span>
+                <span id="PvText" class="TempOk">90.0</span>
                 <span id="PvFooter">&#176;C</span>
             </div>
-            <div id="Tilts">
-                <div class="Tilt Black" onClick="ShowBeerName('Black');"><div id="BlackName" class="BeerName"></div><div id="BlackGrav" class="BeerGrav"></div><div class="TiltData"><div id="BlackBeacon" class="TiltBeacon"></div><div id="BlackTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Blue" onClick="ShowBeerName('Blue');"><div id="BlueName" class="BeerName"></div><div id="BlueGrav" class="BeerGrav"></div><div class="TiltData"><div id="BlueBeacon" class="TiltBeacon"></div><div id="BlueTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Green" onClick="ShowBeerName('Green');"><div id="GreenName" class="BeerName"></div><div id="GreenGrav" class="BeerGrav"></div><div class="TiltData"><div id="GreenBeacon" class="TiltBeacon"></div><div id="GreenTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Orange" onClick="ShowBeerName('Orange');"><div id="OrangeName" class="BeerName"></div><div id="OrangeGrav" class="BeerGrav"></div><div class="TiltData"><div id="OrangeBeacon" class="TiltBeacon"></div><div id="OrangeTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Pink" onClick="ShowBeerName('Pink');"><div id="PinkName" class="BeerName"></div><div id="PinkGrav" class="BeerGrav"></div><div class="TiltData"><div id="PinkBeacon" class="TiltBeacon"></div><div id="PinkTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Purple" onClick="ShowBeerName('Purple');"><div id="PurpleName" class="BeerName"></div><div id="PurpleGrav" class="BeerGrav"></div><div class="TiltData"><div id="PurpleBeacon" class="TiltBeacon"></div><div id="PurpleTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Red" onClick="ShowBeerName('Red');"><div id="RedName" class="BeerName"></div><div id="RedGrav" class="BeerGrav"></div><div class="TiltData"><div id="RedBeacon" class="TiltBeacon"></div><div id="RedTemp" class="TiltTemp"></div></div></div>
-                <div class="Tilt Yellow" onClick="ShowBeerName('Yellow');"><div id="YellowName" class="BeerName"></div><div id="YellowGrav" class="BeerGrav"></div><div class="TiltData"><div id="YellowBeacon" class="TiltBeacon"></div><div id="YellowTemp" class="TiltTemp"></div></div></div>
+            <div id="Gv">
+                <span id="GvHeader">Gv</span>
+                <span id="GvText">1.005</span>
+                <span id="GvFooter">SG</span>
+            </div>
+            <div id="Graph">
             </div>
             <div id="Metrics">
-                <div class="Metric">Main Volts: <span id="MainVolts">125</Span></div>
-                <div class="Metric">Cold Amps: <span id="ColdAmps">0</Span></div>
-                <div class="Metric">Up: <span id="Uptime">00:00:00</Span></div>
-                <div class="MetricButtons" id="MetricButtons"><img src="img/refresh.png" onClick="window.location.reload(true);" style="cursor: pointer;"/><img id="AzureIcon" src="img/la_on.png"/><img src="img/config.png" onClick="ShowConfig();" style="cursor: pointer;"/></div>
-                <div class="Metric">Main Amps: <span id="MainAmps">0</Span></div>
-                <div class="Metric">Hot Amps: <span id="HotAmps">0</Span></div>
-                <div class="Metric">LL: <span id="LastLog">0:0:0</Span></div>
-                <div class="Metric">kWh: <span id="kWh">0</span></div>
-                <div class="Metric">Energy Cost: $<span id="EnCost">0.00</span></div>
-                <div class="Metric">CPU Temp: <span id="CpuTemp">45</Span></div>
+                <div class="Metric"><span>Cold Amps: </span><span class="MetricValue" id="ColdAmps">0</Span></div>
+                <div class="Metric"><span>CPU Temp: </span><span class="MetricValue" id="CpuTemp">45</Span></div>
+                <div class="Metric"><span>Hot Amps: </span><span class="MetricValue" id="HotAmps">0</Span></div>
+                <div class="Metric"><span>HS Temp: </span><span class="MetricValue" id="HeatsinkTemp">45</Span></div>
+                <div class="Metric"><span>Main Amps: </span><span class="MetricValue" id="MainAmps">0</Span></div>
+                <div class="Metric"><span>IoT: </span><span class="MetricValue" id="LastLog">0:0:0</Span></div>
+                <div class="Metric"><span>Main Volts: </span><span class="MetricValue" id="MainVolts">125</Span></div>
+                <div class="Metric"><span>BT: </span><span class="MetricValue" id="LastBt">0:0:0</Span></div>
+                <div class="Metric"><span>kWh: </span><span class="MetricValue" id="kWh">0</span></div>
+                <div class="Metric"><span>SLC: </span><span class="MetricValue" id="SLC">0</Span></div>
+                <div class="Metric"><span>Run Cost: </span><span class="MetricValue" id="EnCost">0.00</span></div>
+                <div class="Metric"><span>Up: </span><span class="MetricValue" id="Uptime">00:00:00</Span></div>
+            </div>
+            <div id="Controls">
+                <div id="Beer"><img src="img/beer.png" onClick="ShowBeerName();"/></div>
+                <div id="Azure"><img id="AzureStatus" src="img/iot_off.png" /></div>
+                <div id="Settings"><img src="img/options.png" onClick="ShowConfig();" style="cursor: pointer;"/></div>
+                <div id="Calibrate"><img src="img/calibrate.png" /></div>
+                <div id="Pump"><img src="img/pump_off.png" /></div>
+                <div id="Errors"><img id="ErrorIndicator" src="img/error_no.png" onClick="ShowLogs();" style="cursor: pointer;"/></div>
             </div>
         </div>
         <div id="BeerName">
@@ -140,40 +152,40 @@
         </div>
         <div id="Config">
             <!--Log Analytics Row-->
-            <div class="ConfigLabel">Log Analytics:</div>
-            <div class="ConfigButton" id="LogEnabled" onClick="ToggleLogs();">Enabled</div>
+            <div class="ConfigLabel">Azure:</div>
             <div class="empty"></div>
             <div class="empty"></div>
+            <div class="ConfigButton" id="LogEnabled" onClick="ToggleLogs();">Off</div>
             <!--Log Frequency-->
-            <div class="ConfigLabel">Log Freq:</div>
-            <div class="ConfigLabel" id="LogFrequency">300</div>
-            <div class="ConfigButton" id="DecLogFreq" onClick="AdjustLogFreq(-1);">&darr;</div>
-            <div class="ConfigButton" id="IncLogFreq" onClick="AdjustLogFreq(1);">&uarr;</div>
+            <div class="ConfigLabel"><img src="img/clock.png" /> Log:</div>
+            <div class="ConfigValue" id="LogFrequency">300</div>
+            <div class="ConfigButton" id="DecLogFreq" onClick="AdjustLogFreq(-10);">&darr;</div>
+            <div class="ConfigButton" id="IncLogFreq" onClick="AdjustLogFreq(10);">&uarr;</div>
             <!--Beacon Frequency-->
-            <div class="ConfigLabel">Beacon Freq:</div>
-            <div class="ConfigLabel" id="BeaconFrequency">15</div>
+            <div class="ConfigLabel"><img src="img/clock.png" /> BT:</div>
+            <div class="ConfigValue" id="BeaconFrequency">15</div>
             <div class="ConfigButton" id="DecBeaconFreq" onClick="AdjustBeaconFreq(-1);">&darr;</div>
             <div class="ConfigButton" id="IncBeaconFreq" onClick="AdjustBeaconFreq(1);">&uarr;</div>
             <!--Temp Units-->
-            <div class="ConfigLabel">Temperature:</div>
+            <div class="ConfigLabel">Temp:</div>
             <div class="ConfigButton" id="TempUnitsC" onClick="ToggleTempUnits('c');">&#176;C</div>
             <div class="ConfigButton" id="TempUnitsF" onClick="ToggleTempUnits('f');">&#176;F</div>
             <div class="ConfigButton" id="TempUnitsK" onClick="ToggleTempUnits('k');">&#176;K</div>
             <!--Grav Units-->
-            <div class="ConfigLabel">Gravity</div>
+            <div class="ConfigLabel">Grav:</div>
             <div class="ConfigButton" id="GravUnitsB" onClick="ToggleGravUnits('brix');">Brix</div>
             <div class="ConfigButton" id="GravUnitsP" onClick="ToggleGravUnits('plato');">Plato</div>
             <div class="ConfigButton" id="GravUnitsS" onClick="ToggleGravUnits('sg');">SG</div>
             <!--Hysteresis-->
             <div class="ConfigLabel">Hysteresis:</div>
-            <div class="ConfigLabel" id="Hysteresis">0.5</div>
+            <div class="ConfigValue" id="Hysteresis">0.5</div>
             <div class="ConfigButton" id="DecHysteresis" onClick="AdjustHysteresis(-0.1);">&darr;</div>
             <div class="ConfigButton" id="IncHysteresis" onClick="AdjustHysteresis(0.1);">&uarr;</div>
             <!--Cycle Length-->
-            <div class="ConfigLabel">Cycle Freq:</div>
-            <div class="ConfigLabel" id="CycleFrequency">300</div>
-            <div class="ConfigButton" id="DecCycleFreq" onClick="AdjustCycleFreq(-1);">&darr;</div>
-            <div class="ConfigButton" id="IncCycleFreq" onClick="AdjustCycleFreq(1);">&uarr;</div>
+            <div class="ConfigLabel"><img src="img/clock.png" /> Cycle:</div>
+            <div class="ConfigValue" id="CycleFrequency">300</div>
+            <div class="ConfigButton" id="DecCycleFreq" onClick="AdjustCycleFreq(-10);">&darr;</div>
+            <div class="ConfigButton" id="IncCycleFreq" onClick="AdjustCycleFreq(10);">&uarr;</div>
             <!--Controls-->
             <div class="ConfigButton ButtonRed" onClick="Power('off');">Shutdown</div>
             <div class="ConfigButton ButtonYellow" onClick="Power('reset');">Restart</div>
@@ -187,6 +199,22 @@
             <input type="hidden" id="NewGravUnits" value="sg"/>
             <input type="hidden" id="NewHysteresis" value="0.5"/>
             <input type="hidden" id="NewCycleFrequency" value="300"/>
+        </div>
+        <div id="LogEntries">
+            <div id="ControllerLogs">
+                <span class="LogHeader">Controller:</span><br />
+                <span class="LogEntries" id="ControllerLogEntries"></span>
+            </div>
+            <div id="IoTLogs">
+                <span class="LogHeader">IoT Hub:</span><br />
+                <span class="LogEntries" id="IoTLogEntries"></span>
+            </div>
+            <div id="LogControls">
+                <div class="empty"></div>
+                <div class="ConfigButton ButtonRed" id="ClearLogs" onClick="LogAction('clear');">Clear</div>
+                <div class="ConfigButton ButtonYellow" id="ResetLogs" onClick="LogAction('reset');">Reset</div>
+                <div class="ConfigButton" id="HideLogs" onClick="HideLogs();">Close</div>
+            </div>
         </div>
     </body>
 </html>
