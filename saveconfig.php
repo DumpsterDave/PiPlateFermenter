@@ -1,7 +1,7 @@
 <?php
     $MIN_LOG_FREQ = 15;
     $MIN_BEACON_FREQ = 15;
-    $MIN_CYCLE_FREQ = 300;
+    $MIN_CYCLE_FREQ = 60;
     $MIN_HYSTERESIS = .1;
     $VALID_TEMP_UNITS = array('c', 'f', 'k');
     $VALID_GRAV_UNITS = array('brix', 'plato', 'sg');
