@@ -22,16 +22,28 @@ IOT = iot.IoT()
 RUN = True
 RTDADDR = 0
 INDADDR = 1
-VOLT = 1
-MAIN = 2
-ERR = 4
-HOT = 3
-COLD = 2
+#0-10v Outs
+VOLT_OUT = 1
+MAIN_OUT = 2
+COLD_OUT = 3
+HOT_OUT = 4
+#Open Drain Outputs
+COLD_OD = 1
+PUMP_OD = 2
+HOT_OD = 3 
+ERR_OD = 4
+#0-10v Inputs
+VOLT_IN = 1
+MAIN_IN = 2
+COLD_IN = 3
+HOT_IN = 4
+#RTD Probes
 TEMP = 1
 HS = 8
+
 BEACON_MIN = 10 #minimum amount of time between beacon cycles
 LOG_MIN = 10 #minimum amount of time between Log Entries
-CYCLE_MIN = 10 #minimum number of seconds between hot/cold cycles
+CYCLE_MIN = 30 #minimum number of seconds between hot/cold cycles
 TILT_COLORS = ["Black", "Blue", "Green", "Orange", "Pink", "Purple", "Red", "Yellow"]
 VDIV = 2.5
 VMUL = 111
@@ -52,45 +64,54 @@ tilt = tilt.Tilt()
 tilt.Start()
 
 #Power on sensors
-megaind.set0_10Out(INDADDR, VOLT, 5)
+megaind.set0_10Out(INDADDR, VOLT_OUT, 5)
+megaind.set0_10Out(INDADDR, MAIN_OUT, 5)
+megaind.set0_10Out(INDADDR, COLD_OUT, 5)
+megaind.set0_10Out(INDADDR, HOT_OUT, 5)
 
 #Rest Error Indicator
-megaind.setOdPWM(INDADDR, ERR, 0)
+megaind.setOdPWM(INDADDR, ERR_OD, 0)
 
 Debug = False
 if (len(sys.argv) > 1) and (sys.argv[1] == '--debug'):
   Debug = True
 
+megaind.set0_10Out(1, 1, 5)
+megaind.set0_10Out(1, 2, 5)
+megaind.set0_10Out(1, 3, 5)
+megaind.set0_10Out(1, 4, 5)
+
 #Function Declarations
 def GetAmps(channel):
-  return 0
-  global M, B, ADDR, HOT, COLD, MAIN
+  global INDADDR
   vMax = 0
-  Amps = 0
+  vMin = 10
   for x in range(0,120):
-    vMeas = DAQC.getADC(ADDR,channel) - (DAQC.getADC(ADDR,8) / 2)
+    vMeas = megaind.get0_10In(INDADDR, channel)
     if vMeas > vMax:
       vMax = vMeas
-  if vMax != 0:
-    Amps = M * vMax + B
-  return round(Amps, 2)
+    elif vMeas < vMin:
+      vMin = vMeas
+  p2p = vMax - vMin
+  Amps = 26 * p2p
+  return round(Amps, 3)
 
 def GetVolts():
   vMax = 0
-  global VDIV, VMUL, INDADDR, VOLT
+  global VDIV, VMUL, INDADDR, VOLT_IN
 
   for x in range(0,120):
-    vMeas = megaind.get0_10In(INDADDR, VOLT)
+    vMeas = megaind.get0_10In(INDADDR, VOLT_IN)
     if vMeas > vMax:
       vMax = vMeas
 
   return vMax / VDIV * VMUL
 
 def OnKill(signum, frame):
-  global RUN, INDADDR, HOT, COLD
+  global RUN, INDADDR, HOT_OD, COLD
   RUN = False
-  megaind.setOdPWM(INDADDR, HOT, 0) #Hot Off
-  megaind.setOdPWM(INDADDR, COLD, 0) #Cold Off
+  megaind.setOdPWM(INDADDR, HOT_OD, 0) #Hot Off
+  megaind.setOdPWM(INDADDR, COLD_OD, 0) #Cold Off
   now = datetime.datetime.now()
   f = open('/var/www/html/python_errors.log', 'a')
   f.write("%s - TILT [0] - Exit called from interface\n" % (now.strftime("%Y-%m-%d %H:%M:%S")))
@@ -210,9 +231,9 @@ while RUN:
   TOTERRORS = ERRCOUNT + IOT.ErrorCount
   try:
     if TOTERRORS > 0:
-      megaind.setOdPWM(INDADDR, ERR, 100)
+      megaind.setOdPWM(INDADDR, ERR_OD, 100)
     else:
-      megaind.setOdPWM(INDADDR, ERR, 0)
+      megaind.setOdPWM(INDADDR, ERR_OD, 0)
 
     CurrTime = datetime.datetime.now()
     d = open('/var/www/html/py/data.json')
@@ -249,9 +270,9 @@ while RUN:
 
     #Refresh Metrics
     data['SinceLastCycle'] = sinceLastCycle
-    data['MainAmps'] = GetAmps(MAIN)
-    data['HotAmps'] = GetAmps(HOT)
-    data['ColdAmps'] = GetAmps(COLD)
+    data['MainAmps'] = GetAmps(MAIN_IN)
+    data['HotAmps'] = GetAmps(HOT_IN)
+    data['ColdAmps'] = GetAmps(COLD_IN)
     data['MainVolts'] = GetVolts()
     #if ((loop % 10) == 0):
     data['ProbeTemp'] = librtd.get(RTDADDR, TEMP)
@@ -263,11 +284,13 @@ while RUN:
     WriteLog(e)
     ERRCOUNT += 1
 
+  #Get IoT Hub Info
   if IOT.DoSend == True:
     data['IoTSending'] = True
   else:
     data['IoTSending'] = False
-  
+  data['LastLog'] = IOT.LastLog
+
   #Process Beacons
   try:
     if (loop == nextBeacon) and (Settings['BeaconEnabled']):
@@ -287,25 +310,25 @@ while RUN:
   #Process Heating/Cooling Cycle
   try:
     if sinceLastCycle >= Settings['CycleFrequency']:
-      if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])): #Too Cold, turn on heat
+      if data['ProbeTemp'] < (float(Settings['TargetTemp']) - float(Settings['Hysteresis'])): #Too COLD_OD, turn on heat
         if data['HotState'] == 0:
           sinceLastCycle = 0 #Heat is off and will be toggled, reset sinceLastCycle to 0
-          megaind.setOdPWM(INDADDR, COLD, 0)
-          megaind.setOdPWM(INDADDR, HOT, 100)
+          megaind.setOdPWM(INDADDR, COLD_OD, 0)
+          megaind.setOdPWM(INDADDR, HOT_OD, 100)
           data['HotState'] = 1
           data['ColdState'] = 0
-      elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])): #Too Hot, turn on cold
+      elif data['ProbeTemp'] > (float(Settings['TargetTemp']) + float(Settings['Hysteresis'])): #Too HOT_OD, turn on cold
         if data['ColdState'] == 0:
           sinceLastCycle = 0 #Cold is off and will be toggled, reset sinceLastCycle to 0
-          megaind.setOdPWM(INDADDR, COLD, 100)
-          megaind.setOdPWM(INDADDR, HOT, 0)
+          megaind.setOdPWM(INDADDR, COLD_OD, 100)
+          megaind.setOdPWM(INDADDR, HOT_OD, 0)
           data['HotState'] = 0
           data['ColdState'] = 1
       else:
         if (data['ColdState'] == 1) or (data['HotState'] == 1):
           sinceLastCycle = 0 #Cold or hot is on and we are now in the Hysteresis band.  Shut them off
-          megaind.setOdPWM(INDADDR, COLD, 0)
-          megaind.setOdPWM(INDADDR, HOT, 0)
+          megaind.setOdPWM(INDADDR, COLD_OD, 0)
+          megaind.setOdPWM(INDADDR, HOT_OD, 0)
           data['HotState'] = 0
           data['ColdState'] = 0
 
@@ -385,6 +408,11 @@ while RUN:
 
 tilt.Stop()
 IOT.Stop()
-megaind.setOdPWM(INDADDR, COLD, 0)
-megaind.setOdPWM(INDADDR, HOT, 0)
-megaind.set0_10Out(INDADDR, VOLT, 0)
+megaind.setOdPWM(INDADDR, COLD_OD, 0)
+megaind.setOdPWM(INDADDR, HOT_OD, 0)
+megaind.setOdPWM(INDADDR, ERR_OD, 0)
+megaind.setOdPWM(INDADDR, PUMP_OD, 0)
+megaind.set0_10Out(INDADDR, VOLT_OUT, 0)
+megaind.set0_10Out(INDADDR, MAIN_OUT, 0)
+megaind.set0_10Out(INDADDR, COLD_OUT, 0)
+megaind.set0_10Out(INDADDR, HOT_OUT, 0)
