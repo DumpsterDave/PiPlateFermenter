@@ -12,6 +12,7 @@ class IoT:
     DoSend = False
     DoReceive = False
     ErrorCount = 0
+    LastLog = 'Never'
     
     Sender = None
 
@@ -22,6 +23,7 @@ class IoT:
                 self.Data = json.load(f)
                 f.close()
                 self.Client.send_message(json.dumps(self.Data))
+                self.LastLog = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
             except Exception as e:
                 f = open('/var/www/html/iot.log', 'a')
                 f.write("IoT[{}]: {} {}\n".format(24,datetime.now().isoformat(timespec='seconds'),e))
