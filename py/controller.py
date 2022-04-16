@@ -107,6 +107,15 @@ def GetVolts():
 
   return vMax / VDIV * VMUL
 
+def GetRTDCal():
+  global RTDADDR, TEMP
+  return Settings['RtdM'] * librtd.get(RTDADDR, TEMP) + Settings['RtdB']
+
+def CalibrateRtdProbe():
+  global Settings
+  Settings['RtdM'] = (float(Settings['RtdHighCal']) - float(Settings['RtdLowCal']))/(float(Settings['RtdHigh']) - float(Settings['RtdLow']))
+  Settings['RtdB'] = float(Settings['RtdHighCal']) - Settings['RtdM'] * float(Settings['RtdHigh'])
+
 def OnKill(signum, frame):
   global RUN, INDADDR, HOT_OD, COLD
   RUN = False
@@ -202,9 +211,11 @@ try:
   data['CycleFrequency'] = Settings['CycleFrequency']
   data['ColdState'] = 0  #Initialize the hot and cold state to off
   data['HotState'] = 0
+
   #Zero kWh
   data['kWh'] = 0
   data['kWhCost'] = Settings['kWhCost']
+
   #Save the new data
   d = open('/var/www/html/py/data.json', 'w')
   json.dump(data, d)
@@ -225,6 +236,9 @@ if Settings['LogEnabled'] == True:
 else:
   nextLog = -1
 nextCycle = loop + Settings['CycleFrequency']
+
+#Calibrate RTD Probe
+CalibrateRtdProbe()
 
 while RUN:
   #Refresh Data/Settings
@@ -275,7 +289,8 @@ while RUN:
     data['ColdAmps'] = GetAmps(COLD_IN)
     data['MainVolts'] = GetVolts()
     #if ((loop % 10) == 0):
-    data['ProbeTemp'] = librtd.get(RTDADDR, TEMP)
+    #data['ProbeTemp'] = librtd.get(RTDADDR, TEMP)
+    data['ProbeTemp'] = GetRTDCal()
     data['CpuTemp'] = CPUTemperature().temperature
     data['HSTemp'] = librtd.get(RTDADDR, HS)
     kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
