@@ -4,11 +4,11 @@
             $Action = $_GET['action'];
             if ($Action == 'off') {
                 file_put_contents('/var/www/html/py/STOP', 'STOP');
-                sleep(2);
+                sleep(5);
                 $out = shell_exec('sudo shutdown -h now');
             } elseif ($Action == 'reset') {
                 file_put_contents('/var/www/html/py/STOP', 'STOP');
-                sleep(2);
+                sleep(5);
                 $out = shell_exec('sudo shutdown -r now');
             }
         }

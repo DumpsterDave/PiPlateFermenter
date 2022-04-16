@@ -400,6 +400,7 @@ while RUN:
 
   try:
     if os.path.exists('/var/www/html/py/STOP'):
+      WriteLog("STOP called from interface")
       RUN = False
       os.remove('/var/www/html/py/STOP')
   except Exception as e:
@@ -416,3 +417,5 @@ megaind.set0_10Out(INDADDR, VOLT_OUT, 0)
 megaind.set0_10Out(INDADDR, MAIN_OUT, 0)
 megaind.set0_10Out(INDADDR, COLD_OUT, 0)
 megaind.set0_10Out(INDADDR, HOT_OUT, 0)
+
+os._exit(ERRCOUNT)
