@@ -211,6 +211,7 @@ try:
   data['CycleFrequency'] = Settings['CycleFrequency']
   data['ColdState'] = 0  #Initialize the hot and cold state to off
   data['HotState'] = 0
+  data['PumpState'] = 0
 
   #Zero kWh
   data['kWh'] = 0
@@ -339,12 +340,13 @@ while RUN:
           megaind.setOdPWM(INDADDR, HOT_OD, 0)
           data['HotState'] = 0
           data['ColdState'] = 1
-      else:
-        if (data['ColdState'] == 1) or (data['HotState'] == 1):
+      else: 
+        if data['HotState'] == 1: #hot state on and in Hysteris Band
           sinceLastCycle = 0 #Cold or hot is on and we are now in the Hysteresis band.  Shut them off
-          megaind.setOdPWM(INDADDR, COLD_OD, 0)
           megaind.setOdPWM(INDADDR, HOT_OD, 0)
           data['HotState'] = 0
+        elif data['ColdState'] == 1: #cold state on and in Hysteris Band
+          megaind.setOdPWM(INDADDR, COLD_OD, 0)
           data['ColdState'] = 0
 
   except Exception as e:
@@ -396,6 +398,23 @@ while RUN:
   data['ControllerErrors'] = ERRCOUNT
   data['IoTErrors'] = IOT.ErrorCount
   data['TotalErrors'] = TOTERRORS
+
+  #Toggle Pump if instructed
+  if os.path.isfile("/var/www/html/py/togglepump"):
+    currentState = megaind.getOdPWM(INDADDR, PUMP_OD)
+    if currentState > 0:
+      megaind.setOdPWM(INDADDR, PUMP_OD, 0)
+    else:
+      megaind.setOdPWM(INDADDR, PUMP_OD, 100)
+    os.remove('/var/www/html/py/togglepump')
+    
+  #Get Pump Status
+  pumpStatus = 0
+  if megaind.getOdPWM(INDADDR, COLD_OD) > 0:
+    pumpStatus = pumpStatus + 1
+  if megaind.getOdPWM(INDADDR, PUMP_OD) > 0:
+    pumpStatus = pumpStatus + 2
+  data['PumpState'] = pumpStatus
 
   #Write Data
   try:

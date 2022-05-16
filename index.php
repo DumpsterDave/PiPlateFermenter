@@ -65,7 +65,7 @@
                 <div id="Azure"><img id="AzureStatus" src="img/iot_off.png" /></div>
                 <div id="Settings"><img src="img/options.png" onClick="ShowConfig();" style="cursor: pointer;"/></div>
                 <div id="Calibrate"><img src="img/calibrate.png" /></div>
-                <div id="Pump"><img src="img/pump_off.png" /></div>
+                <div id="Pump"><img id="PumpState" src="img/pump_0.png" onClick="TogglePump();" style="cursor: pointer;"/></div>
                 <div id="Errors"><img id="ErrorIndicator" src="img/error_no.png" onClick="ShowLogs();" style="cursor: pointer;"/></div>
             </div>
         </div>

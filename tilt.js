@@ -114,6 +114,7 @@ function RefreshElements() {
             document.getElementById("LastLog").innerHTML = Values['LastLog'];
             document.getElementById("CpuTemp").innerHTML = Values['CpuTemp'].toFixed(1) + TempSymbol;
             document.getElementById("HeatsinkTemp").innerHTML = Values['HSTemp'].toFixed(1) + TempSymbol;
+            document.getElementById("PumpState").src = "img/pump_" + Values['PumpState'] + ".png"; 
 
             if(Values['IoTSending'] == true) {
                 document.getElementById("AzureStatus").src = 'img/iot_on.png';
@@ -177,6 +178,12 @@ function SaveConfig() {
     };
 
     xhttp.open("GET", "saveconfig.php?LogEnabled=" + NewLogEnabled + "&LogFreq=" + NewLogFrequency + "&BeaconFreq=" + NewBeaconFrequency + "&TempUnits=" + NewTempUnits + "&GravUnits=" + NewGravUnits + "&Hysteresis=" + NewHysteresis + "&CycleFreq=" + NewCycleFrequency, true);
+    xhttp.send();
+}
+
+function TogglePump() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("GET", "togglepump.php", true);
     xhttp.send();
 }
 
