@@ -109,7 +109,7 @@ def GetVolts():
 
 def GetRTDCal():
   global RTDADDR, TEMP
-  return Settings['RtdM'] * librtd.get(RTDADDR, TEMP) + Settings['RtdB']
+  return (Settings['RtdM'] or 1) * librtd.get(RTDADDR, TEMP) + (Settings['RtdB'] or 0)
 
 def CalibrateRtdProbe():
   global Settings
@@ -257,12 +257,16 @@ while RUN:
 
     Uptime = CurrTime - START_TIME
     data['Uptime'] = str(Uptime)
-
-    #reload settings if they have changed
+  except Exception as e:
+    WriteLog(e)
+    ERRCOUNT += 1
+    
+  try: #reload settings if they have changed
     if os.path.isfile("/var/www/html/py/reload"):
       f = open("/var/www/html/py/conf.json")
       Settings = json.load(f)
       f.close()
+      CalibrateRtdProbe()
       #Copy some settings to the data structure
       data['TargetTemp'] = Settings['TargetTemp']
       data['Hysteresis'] = Settings['Hysteresis']
@@ -281,16 +285,16 @@ while RUN:
         nextLog = loop
       else:
         nextLog = -1
+  except Exception as e:
+    WriteLog(e)
+    ERRCOUNT += 1
     
-
-    #Refresh Metrics
+  try: #Refresh Metrics
     data['SinceLastCycle'] = sinceLastCycle
     data['MainAmps'] = GetAmps(MAIN_IN)
     data['HotAmps'] = GetAmps(HOT_IN)
     data['ColdAmps'] = GetAmps(COLD_IN)
     data['MainVolts'] = GetVolts()
-    #if ((loop % 10) == 0):
-    #data['ProbeTemp'] = librtd.get(RTDADDR, TEMP)
     data['ProbeTemp'] = GetRTDCal()
     data['CpuTemp'] = CPUTemperature().temperature
     data['HSTemp'] = librtd.get(RTDADDR, HS)
@@ -309,6 +313,8 @@ while RUN:
 
   #Process Beacons
   try:
+    if tilt.DoScan != True:
+      WriteLog("Tilt Not Running")
     if (loop == nextBeacon) and (Settings['BeaconEnabled']):
       color = data['TiltColor']
       data['TiltTemp'] = tilt.GetCalTemp(color)
