@@ -73,6 +73,11 @@ class Tilt:
                 for beacon in returnedList:
                     parts = beacon.split(",")
                     color = self.UUIDS.get(parts[1])
+                    if (self.Config['Debug'] == True):
+                        if color != None:
+                            print(color + ": " + beacon)
+                        else:
+                            print("Noise: " + beacon)
                     if color != None:
                         self.Temp[color] = ((float(parts[2]) / 10) - 32) / 1.8
                         self.Grav[color] = float(parts[3]) / 10000
