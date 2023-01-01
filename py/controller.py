@@ -469,4 +469,12 @@ megaind.set0_10Out(INDADDR, MAIN_OUT, 0)
 megaind.set0_10Out(INDADDR, COLD_OUT, 0)
 megaind.set0_10Out(INDADDR, HOT_OUT, 0)
 
+#Last Data Write
+data['Status'] = 'OFF'
+data['IoTSending'] = False
+data['LogEnabled'] = False
+d = open('/var/www/html/py/data.json', 'w')
+json.dump(data, d)
+d.close()
+
 os._exit(ERRCOUNT)
