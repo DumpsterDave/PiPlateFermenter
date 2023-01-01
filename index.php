@@ -50,7 +50,8 @@
                 <div class="Metric"><span>Cold Amps: </span><span class="MetricValue" id="ColdAmps">0</Span></div>
                 <div class="Metric"><span>CPU Temp: </span><span class="MetricValue" id="CpuTemp">45</Span></div>
                 <div class="Metric"><span>Hot Amps: </span><span class="MetricValue" id="HotAmps">0</Span></div>
-                <div class="Metric"><span>HS Temp: </span><span class="MetricValue" id="HeatsinkTemp">45</Span></div>
+                <!-- <div class="Metric"><span>HS Temp: </span><span class="MetricValue" id="HeatsinkTemp">0</Span></div> -->
+                <div class="Metric"><span>Pressure: </span><span class="MetricValue" id="Pressure">0</Span></div>
                 <div class="Metric"><span>Main Amps: </span><span class="MetricValue" id="MainAmps">0</Span></div>
                 <div class="Metric"><span>IoT: </span><span class="MetricValue" id="LastLog">0:0:0</Span></div>
                 <div class="Metric"><span>Main Volts: </span><span class="MetricValue" id="MainVolts">125</Span></div>

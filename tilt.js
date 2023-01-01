@@ -113,7 +113,8 @@ function RefreshElements() {
             document.getElementById("Uptime").innerHTML = UpTimeParts[0] + ":" + UpTimeParts[1] + ":" + SecString;
             document.getElementById("LastLog").innerHTML = Values['LastLog'];
             document.getElementById("CpuTemp").innerHTML = Values['CpuTemp'].toFixed(1) + TempSymbol;
-            document.getElementById("HeatsinkTemp").innerHTML = Values['HSTemp'].toFixed(1) + TempSymbol;
+            //document.getElementById("HeatsinkTemp").innerHTML = Values['HSTemp'].toFixed(1) + TempSymbol;
+            document.getElementById("Pressure").innerHTML = Values['Pressure'].toFixed(2) + ' PSI';
             document.getElementById("PumpState").src = "img/pump_" + Values['PumpState'] + ".png"; 
 
             if(Values['IoTSending'] == true) {

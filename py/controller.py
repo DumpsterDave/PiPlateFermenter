@@ -40,6 +40,8 @@ HOT_IN = 4
 #RTD Probes
 TEMP = 1
 HS = 8
+#4-20mA Inputs
+PRESS = 1
 
 BEACON_MIN = 10 #minimum amount of time between beacon cycles
 LOG_MIN = 10 #minimum amount of time between Log Entries
@@ -95,6 +97,11 @@ def GetAmps(channel):
   p2p = vMax - vMin
   Amps = 26 * p2p
   return round(Amps, 3)
+
+def GetPressure(channel):
+  global INDADDR
+  mA = round(megaind.get4_20In(INDADDR, channel), 1)
+  return round((-.0085 * (mA * mA)) + (2.0167 * mA) - 22.431, 2)
 
 def GetVolts():
   vMax = 0
@@ -193,9 +200,10 @@ try:
     DirtySettings = False
 
   #Data
-  f = open('/var/www/html/py/data.json')
-  data = json.load(f)
-  f.close()
+  if os.path.isfile("/var/www/html/py/data.json"):
+    f = open('/var/www/html/py/data.json')
+    data = json.load(f)
+    f.close()
 
   #Copy some settings to the data structure
   data['TargetTemp'] = Settings['TargetTemp']
@@ -213,9 +221,10 @@ try:
   data['HotState'] = 0
   data['PumpState'] = 0
 
-  #Zero kWh
+  #Zero kWh & Pressure
   data['kWh'] = 0
   data['kWhCost'] = Settings['kWhCost']
+  data['Pressure'] = 0
 
   #Save the new data
   d = open('/var/www/html/py/data.json', 'w')
@@ -300,6 +309,7 @@ while RUN:
     data['HSTemp'] = librtd.get(RTDADDR, HS)
     kWh = (data['MainAmps'] * data['MainVolts'] * .000277) / 1000
     data['kWh'] += kWh
+    data['Pressure'] = GetPressure(PRESS)
   except Exception as e:
     WriteLog(e)
     ERRCOUNT += 1
