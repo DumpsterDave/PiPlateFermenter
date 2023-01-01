@@ -206,6 +206,7 @@ try:
     f.close()
 
   #Copy some settings to the data structure
+  data['Status'] = 'OK'
   data['TargetTemp'] = Settings['TargetTemp']
   data['Hysteresis'] = Settings['Hysteresis']
   data['TiltName'] = Settings['BeerName']
