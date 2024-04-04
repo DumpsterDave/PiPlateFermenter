@@ -1,0 +1,78 @@
+{
+    "Black": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Blue": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Green": {
+        "Name": "Heffeweizen",
+        "Temp": 17.77777777777778,
+        "Grav": 1,
+        "LastBeacon": "2021-01-09 12:03:58",
+        "Enabled": true
+    },
+    "Orange": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Pink": {
+        "Name": "Disabled",
+        "Temp": 17.77777777777778,
+        "Grav": 1.0883243243243244,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Purple": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Red": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "Yellow": {
+        "Name": "Disabled",
+        "Temp": 0,
+        "Grav": 1,
+        "LastBeacon": "Never",
+        "Enabled": false
+    },
+    "MainVolts": 118.19519999999999,
+    "MainAmps": 0.44,
+    "kWh": 0.006150018778112012,
+    "HotAmps": 0,
+    "HotState": 0,
+    "ColdAmps": 0,
+    "ColdState": 1,
+    "CpuTemp": 55.844,
+    "ProbeTemp": 20.0625,
+    "TargetTemp": -0.22222222222222143,
+    "Hysteresis": 0.5,
+    "TempUnits": "f",
+    "GravUnits": "sg",
+    "Uptime": "0:07:29.976369",
+    "LastLog": "",
+    "SinceLastCycle": 0,
+    "LogEnabled": false,
+    "LogFrequency": 300,
+    "BeaconFrequency": 15,
+    "CycleFrequency": 300
+}
