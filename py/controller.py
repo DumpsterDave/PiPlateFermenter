@@ -1,4 +1,5 @@
 import base64
+import brewfather
 import datetime
 from gpiozero import CPUTemperature
 import hashlib
@@ -19,6 +20,7 @@ import time
 
 #Global Variables
 IOT = iot.IoT()
+BF = brewfather.BrewFather()
 RUN = True
 RTDADDR = 0
 INDADDR = 1
@@ -179,6 +181,7 @@ signal.signal(signal.SIGTERM, OnKill)
 try:
   #Setup IoT
   IOT.Start()
+  BF.Start()
   #Settings
   f = open("/var/www/html/py/conf.json")
   Settings = json.load(f)
@@ -458,8 +461,17 @@ while RUN:
     WriteLog(e)
     ERRCOUNT += 1
 
+#Last Data Write
+data['Status'] = 'OFF'
+data['IoTSending'] = False
+data['LogEnabled'] = False
+d = open('/var/www/html/py/data.json', 'w')
+json.dump(data, d)
+d.close()
+
 tilt.Stop()
 IOT.Stop()
+BF.Stop()
 megaind.setOdPWM(INDADDR, COLD_OD, 0)
 megaind.setOdPWM(INDADDR, HOT_OD, 0)
 megaind.setOdPWM(INDADDR, ERR_OD, 0)
@@ -468,13 +480,5 @@ megaind.set0_10Out(INDADDR, VOLT_OUT, 0)
 megaind.set0_10Out(INDADDR, MAIN_OUT, 0)
 megaind.set0_10Out(INDADDR, COLD_OUT, 0)
 megaind.set0_10Out(INDADDR, HOT_OUT, 0)
-
-#Last Data Write
-data['Status'] = 'OFF'
-data['IoTSending'] = False
-data['LogEnabled'] = False
-d = open('/var/www/html/py/data.json', 'w')
-json.dump(data, d)
-d.close()
 
 os._exit(ERRCOUNT)

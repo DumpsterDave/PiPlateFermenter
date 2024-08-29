@@ -40,7 +40,7 @@ class BrewFather:
     self.GravUnits = gravUnits
 
   def SendData(self):
-    while self.DoSend:
+    while True:
       try:
         self.RefreshConfig()
         f = open('/var/www/html/py/data.json')
@@ -70,6 +70,9 @@ class BrewFather:
         req = requests.post(self.Config['BrewfatherEndpoint'], json=self.Payload)
         if (req.status_code != 200):
           raise ConnectionError('Brewfather POST did not return 20')
+        
+        if (self.DoSend != True):
+          break
       except Exception as e:
         f = open('/var/www/html/iot.log', 'a')
         f.write("BF[{}]: {} {}\n".format(sys.exc_info()[-1].tb_lineno,datetime.now().isoformat(timespec='seconds'),e))
