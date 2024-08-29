@@ -1,6 +1,9 @@
 py/conf.json
 py/TiltHydrometer.py
 py/blescan.py
+py/data.json
+py/test.py
 tiltHydrometer/
 python_errors.log
 *.old
+*.log
