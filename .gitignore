@@ -7,3 +7,4 @@ tiltHydrometer/
 python_errors.log
 *.old
 *.log
+*.pyc
