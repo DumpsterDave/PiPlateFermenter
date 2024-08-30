@@ -6,7 +6,6 @@ import threading
 import time
 
 class BrewFather:
-  GravUnits = None
   Config = None
   DoSend = False
   ErrorCount = 0
@@ -16,16 +15,16 @@ class BrewFather:
   def __init__(self):
     self.RefreshConfig()
     self.Payload = {
-      'name': self.Config['BeerName'],
+      'name': 'SSBFermenter',
+      'beer': self.Config['BeerName'],
       'temp': 0,
-      'temp_unit': self.Config['TempUnits'].upper(),
+      'temp_unit': 'C',
       'temp_target': 0,
       'gravity': 0,
-      'gravity_unit': self.GravUnits.upper(),
+      'gravity_unit': 'G',
       'pressure': 0,
       'pressure_unit': 'PSI',
-      'device_state': 'off',
-      'report_source': 'SSB Fermenter'
+      'device_state': 'off'
     }
     self.Sender = threading.Thread(target=self.SendData)
 
@@ -33,11 +32,6 @@ class BrewFather:
     f = open('/var/www/html/py/conf.json')
     self.Config = json.load(f)
     f.close()
-    if (self.Config['GravUnits'] == 'brix' or self.Config['GravUnits'] == 'plato'):
-      gravUnits = 'P'
-    else:
-      gravUnits = 'G'
-    self.GravUnits = gravUnits
 
   def SendData(self):
     while True:
@@ -46,18 +40,11 @@ class BrewFather:
         f = open('/var/www/html/py/data.json')
         Data = json.load(f)
         f.close()
-
-        if (self.Config['TempUnits'] == 'F'):
-          self.Payload['temp'] = self.CtoF(Data['ProbeTemp'])
-          self.Payload['temp_target'] = self.CtoF(Data['TargetTemp'])
-        else:
-          self.Payload['temp'] = Data['ProbeTemp']
-          self.Payload['temp_target'] = Data['TargetTemp']
-        if (self.GravUnits == 'P'):
-          self.Payload['gravity'] = self.SGtoPlato(Data['TiltGrav'])
-        else:
-          self.Payload['gravity'] = Data['TiltGrav']
+        self.Payload['temp'] = Data['ProbeTemp']
+        self.Payload['temp_target'] = Data['TargetTemp']
+        self.Payload['gravity'] = Data['TiltGrav']
         self.Payload['pressure'] = Data['Pressure']
+        self.Payload['beer'] = self.Config['BeerName']
         if (Data['ColdState'] == 1):
           self.Payload['device_state'] = 'cooling'
         elif (Data['HotState'] == 1):
@@ -67,9 +54,11 @@ class BrewFather:
         else:
           self.Payload['device_state'] = 'on'
 
-        req = requests.post(self.Config['BrewfatherEndpoint'], json=self.Payload)
+        header = {'Content-Type': 'application/json'}
+
+        req = requests.post(self.Config['BrewfatherEndpoint'], headers=header, json=self.Payload)
         if (req.status_code != 200):
-          raise ConnectionError('Brewfather POST did not return 20')
+          raise ConnectionError('Brewfather POST did not return 200')
         
         if (self.DoSend != True):
           break
